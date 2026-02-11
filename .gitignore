@@ -1,2 +1,4 @@
 node_modules
-.env
+.env.env
+recipe-service/.env
+node_modules/
