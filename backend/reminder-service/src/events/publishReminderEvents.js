@@ -5,7 +5,8 @@ const publishReminderSet = async ({ userId, reminder, itemName }) => {
         type: "reminder.set",
         userId: userId.toString(),
         reminderId: reminder._id.toString(),
-        itemName: reminder.itemName
+        itemName: reminder.itemName,
+        reminderDate: reminder.reminderDate.toISOString(),
     });
 };
 const publishReminderDue = async ({ userId, reminder, itemName }) => {
@@ -13,7 +14,7 @@ const publishReminderDue = async ({ userId, reminder, itemName }) => {
         type: "reminder.due",
         userId: userId.toString(),
         reminderId: reminder._id.toString(),
-        itemName: reminder.itemName
+        itemName: reminder.itemName,
     });
 };
 

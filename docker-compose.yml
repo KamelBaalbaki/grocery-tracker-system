@@ -1,0 +1,72 @@
+services:
+  user-service:
+    build: ./backend/user-service
+    ports:
+      - "4001:4001"
+    env_file:
+      - ./backend/user-service/.env
+    volumes:
+      - ./backend/user-service:/app
+    command: npm run dev
+
+  item-service:
+    build: ./backend/item-service
+    ports:
+      - "4002:4002"
+    env_file:
+      - ./backend/item-service/.env
+    volumes:
+      - ./backend/item-service:/app
+    command: npm run dev
+
+  item-service-worker:
+    build: ./backend/item-service
+    env_file:
+      - ./backend/item-service/.env
+    volumes:
+      - ./backend/item-service:/app
+    command: node src/worker.js
+
+  reminder-service:
+      build: ./backend/reminder-service
+      ports:
+        - "4003:4003"
+      env_file:
+        - ./backend/reminder-service/.env
+      volumes:
+        - ./backend/reminder-service:/app
+      command: npm run dev
+
+  notification-service:
+    build: ./backend/notification-service
+    ports:
+      - "4004:4004"
+    env_file:
+      - ./backend/notification-service/.env
+    volumes:
+      - ./backend/notification-service:/app
+    command: npm run dev
+
+  recipe-service:
+    build: ./backend/recipe-service
+    ports:
+      - "4005:4005"
+    env_file:
+      - ./backend/recipe-service/.env
+    volumes:
+      - ./backend/recipe-service:/app
+    command: npm run dev
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redisinsight
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis
