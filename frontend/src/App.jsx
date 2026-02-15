@@ -16,6 +16,7 @@ import Notifications from './pages/Notifications';
 import Recipes from './pages/Recipes';
 import EcoInsights from './pages/EcoInsights';
 import Settings from './pages/Settings';
+import Reminders from './pages/Reminders';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -107,6 +108,16 @@ function App() {
           <ProtectedRoute>
             <DashboardLayout>
               <AddItem />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reminders"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <Reminders />
             </DashboardLayout>
           </ProtectedRoute>
         }

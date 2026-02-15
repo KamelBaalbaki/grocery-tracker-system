@@ -6,7 +6,8 @@ import {
   Bell, 
   ChefHat, 
   BarChart3, 
-  Settings 
+  Settings,
+  Clock 
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -15,6 +16,7 @@ const Sidebar = () => {
     { to: '/grocery-list', icon: ShoppingCart, label: 'Grocery List' },
     { to: '/add-item', icon: PlusCircle, label: 'Add Item' },
     { to: '/notifications', icon: Bell, label: 'Notifications' },
+    { to: '/reminders', icon: Clock, label: 'Reminders' },
     { to: '/recipes', icon: ChefHat, label: 'Recipes' },
     { to: '/eco-insights', icon: BarChart3, label: 'Eco Insights' },
     { to: '/settings', icon: Settings, label: 'Settings' },

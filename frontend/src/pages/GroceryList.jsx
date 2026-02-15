@@ -1,17 +1,22 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { itemsAPI } from '../services/api';
-import { Search, Plus, Package, Eye, Edit3, Trash2 } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { itemsAPI, remindersAPI } from "../services/api";
+import { Search, Plus, Package, Trash2, Clock, Edit3 } from "lucide-react";
 
 const GroceryList = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [reminderDate, setReminderDate] = useState("");
+  const [reminderMessage, setReminderMessage] = useState("");
 
   useEffect(() => {
     fetchItems();
@@ -27,7 +32,7 @@ const GroceryList = () => {
       setItems(data);
       setFilteredItems(data);
     } catch (error) {
-      console.error('Failed to fetch items:', error);
+      console.error("Failed to fetch items:", error);
     } finally {
       setLoading(false);
     }
@@ -38,39 +43,74 @@ const GroceryList = () => {
       setFilteredItems(items);
       return;
     }
-    
+
     const query = searchQuery.toLowerCase();
-    const filtered = items.filter(item => 
-      item.name.toLowerCase().includes(query) ||
-      item.category.toLowerCase().includes(query)
+    const filtered = items.filter(
+      (item) =>
+        item.name.toLowerCase().includes(query) ||
+        item.category.toLowerCase().includes(query),
     );
+
     setFilteredItems(filtered);
   };
 
   const handleDelete = async (itemId) => {
     try {
       await itemsAPI.delete(itemId);
-      setItems(prev => prev.filter(item => item._id !== itemId));
+      setItems((prev) => prev.filter((item) => item._id !== itemId));
       setDeleteConfirm(null);
     } catch (error) {
-      console.error('Failed to delete item:', error);
+      console.error("Failed to delete item:", error);
+    }
+  };
+
+  const openReminderModal = (item) => {
+    setSelectedItem(item);
+    setReminderDate("");
+    setReminderMessage("");
+    setShowReminderModal(true);
+  };
+
+  const handleReminderSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const isoDate = new Date(reminderDate).toISOString();
+
+      await remindersAPI.create({
+        itemId: selectedItem._id,
+        itemName: selectedItem.name,
+        reminderDate: isoDate,
+        message: reminderMessage,
+      });
+
+      setShowReminderModal(false);
+    } catch (error) {
+      console.error("Failed to create reminder:", error);
     }
   };
 
   const formatDate = (date) => {
-    if (!date) return '--';
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
+    if (!date) return "--";
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
     });
   };
 
   const getExpiryStatus = (expiryDate) => {
-    const days = Math.ceil((new Date(expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
-    if (days < 0) return { status: 'expired', color: 'var(--danger)', percent: 100 };
-    if (days <= 3) return { status: 'critical', color: 'var(--danger)', percent: 90 };
-    if (days <= 7) return { status: 'warning', color: 'var(--warning)', percent: 60 };
-    return { status: 'good', color: 'var(--success)', percent: 30 };
+    const days = Math.ceil(
+      (new Date(expiryDate) - new Date()) / (1000 * 60 * 60 * 24),
+    );
+
+    if (days < 0)
+      return { status: "expired", color: "var(--danger)", percent: 100 };
+    if (days <= 3)
+      return { status: "critical", color: "var(--danger)", percent: 90 };
+    if (days <= 7)
+      return { status: "warning", color: "var(--warning)", percent: 60 };
+
+    return { status: "good", color: "var(--success)", percent: 30 };
   };
 
   if (loading) {
@@ -99,6 +139,7 @@ const GroceryList = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+
           <Link to="/add-item" className="btn btn-primary">
             <Plus size={18} />
             Add Item
@@ -118,62 +159,75 @@ const GroceryList = () => {
                 <th>Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {filteredItems.map((item) => {
                 const expiry = getExpiryStatus(item.expiryDate);
+
                 return (
                   <tr key={item._id}>
-                    <td className="item-name">{item.name}</td>
+                    <td>{item.name}</td>
+
                     <td>
-                      <span style={{
-                        padding: '0.25rem 0.75rem',
-                        background: 'var(--bg-secondary)',
-                        borderRadius: '50px',
-                        fontSize: '0.75rem'
-                      }}>
+                      <span
+                        style={{
+                          padding: "0.25rem 0.75rem",
+                          background: "var(--bg-secondary)",
+                          borderRadius: "50px",
+                          fontSize: "0.75rem",
+                        }}
+                      >
                         {item.category}
                       </span>
                     </td>
+
                     <td>{item.quantity}</td>
                     <td>{formatDate(item.purchaseDate)}</td>
                     <td>{formatDate(item.expiryDate)}</td>
+
                     <td>
                       <div className="progress-bar">
-                        <div 
-                          className="progress-fill" 
-                          style={{ 
+                        <div
+                          className="progress-fill"
+                          style={{
                             width: `${expiry.percent}%`,
-                            background: expiry.color
+                            background: expiry.color,
                           }}
                         ></div>
                       </div>
                     </td>
+
                     <td>
                       <div className="table-actions">
-                        <button 
-                          className="action-btn view"
-                          onClick={() => navigate(`/edit-item/${item._id}`)}
-                          title="View details"
-                        >
-                          <Eye size={14} />
-                        </button>
-                        <button 
+                        <button
                           className="action-btn edit"
                           onClick={() => navigate(`/edit-item/${item._id}`)}
                           title="Edit item"
                         >
                           <Edit3 size={14} />
                         </button>
+                        <button
+                          className="action-btn"
+                          onClick={() => openReminderModal(item)}
+                          title="Set Reminder"
+                        >
+                          <Clock size={14} />
+                        </button>
+
                         {deleteConfirm === item._id ? (
                           <>
-                            <button 
+                            <button
                               className="action-btn delete"
                               onClick={() => handleDelete(item._id)}
-                              style={{ background: 'var(--danger)', color: 'white' }}
+                              style={{
+                                background: "var(--danger)",
+                                color: "white",
+                              }}
                             >
                               Confirm
                             </button>
-                            <button 
+
+                            <button
                               className="action-btn view"
                               onClick={() => setDeleteConfirm(null)}
                             >
@@ -181,7 +235,7 @@ const GroceryList = () => {
                             </button>
                           </>
                         ) : (
-                          <button 
+                          <button
                             className="action-btn delete"
                             onClick={() => setDeleteConfirm(item._id)}
                             title="Delete item"
@@ -200,14 +254,71 @@ const GroceryList = () => {
           <div className="empty-state">
             <Package size={80} />
             <h3>No items found</h3>
-            <p>Start tracking your groceries by adding your first item!</p>
-            <Link to="/add-item" className="btn btn-primary" style={{ marginTop: '1.5rem' }}>
+            <p>Add your first grocery item to get started!</p>
+
+            <Link
+              to="/add-item"
+              className="btn btn-primary"
+              style={{ marginTop: "1.5rem" }}
+            >
               <Plus size={18} />
-              Add Your First Item
+              Add Item
             </Link>
           </div>
         )}
       </div>
+
+      {showReminderModal && (
+        <div className="modern-modal-overlay">
+          <div className="modern-modal">
+            <div className="modal-header">
+              <div className="modal-icon">
+                <Clock size={20} />
+              </div>
+              <div>
+                <h2>Set Reminder</h2>
+                <p>{selectedItem?.name}</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleReminderSubmit} className="modal-form">
+              <div className="input-group">
+                <label>Date & Time</label>
+                <input
+                  type="datetime-local"
+                  value={reminderDate}
+                  onChange={(e) => setReminderDate(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Message (optional)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Use before guests arrive"
+                  value={reminderMessage}
+                  onChange={(e) => setReminderMessage(e.target.value)}
+                />
+              </div>
+
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setShowReminderModal(false)}
+                >
+                  Cancel
+                </button>
+
+                <button type="submit" className="btn-primary">
+                  Save Reminder
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

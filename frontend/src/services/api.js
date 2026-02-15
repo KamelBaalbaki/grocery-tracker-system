@@ -1,10 +1,14 @@
 import axios from 'axios';
 
+const API_BASE_URL = 'http://localhost:';
+
 // Base URLs for each microservice
-const AUTH_URL = '/api/auth';
-const USERS_URL = '/api/users';
-const ITEMS_URL = '/api/items';
-const REMINDERS_URL = '/api/reminders';
+const AUTH_URL = `${API_BASE_URL}4001/api/auth`;
+const USERS_URL = `${API_BASE_URL}4001/api/users`;
+const ITEMS_URL = `${API_BASE_URL}4002/api/items`;
+const REMINDERS_URL = `${API_BASE_URL}4003/api/reminders`;
+const NOTIFICATIONS_URL = `${API_BASE_URL}4004/api/notifications`;
+const RECIPES_URL = `${API_BASE_URL}4004/api/recipes`;
 
 // Create axios instance with default config
 const api = axios.create({
@@ -103,6 +107,43 @@ export const remindersAPI = {
   
   delete: async (reminderId) => {
     const response = await api.delete(`${REMINDERS_URL}/${reminderId}`);
+    return response.data;
+  },
+};
+
+export const notificationsAPI = {
+
+  create: async (notificationData) => {
+    const response = await api.post(NOTIFICATIONS_URL, notificationData);
+    return response.data;
+  },
+
+  getAll: async () => {
+    const response = await api.get(NOTIFICATIONS_URL);
+    return response.data;
+  },
+
+  markAsRead: async (notificationId) => {
+    const response = await api.put(
+      `${NOTIFICATIONS_URL}/${notificationId}/read`
+    );
+    return response.data;
+  },
+
+  markAllAsRead: async () => {
+    const response = await api.put(`${NOTIFICATIONS_URL}/read-all`);
+    return response.data;
+  },
+
+  delete: async (notificationId) => {
+    const response = await api.delete(
+      `${NOTIFICATIONS_URL}/${notificationId}`
+    );
+    return response.data;
+  },
+
+  deleteAll: async () => {
+    const response = await api.delete(NOTIFICATIONS_URL);
     return response.data;
   },
 };
