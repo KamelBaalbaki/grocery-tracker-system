@@ -34,15 +34,6 @@ const AddItem = () => {
     'Other',
   ];
 
-  const reminderOptions = [
-    { value: '', label: 'Select reminder...' },
-    { value: '1', label: '1 day before' },
-    { value: '2', label: '2 days before' },
-    { value: '3', label: '3 days before' },
-    { value: '7', label: '1 week before' },
-    { value: '14', label: '2 weeks before' },
-  ];
-
   useEffect(() => {
     if (isEditing) {
       fetchItem();
@@ -61,7 +52,6 @@ const AddItem = () => {
           purchaseDate: item.purchaseDate ? item.purchaseDate.split('T')[0] : '',
           expiryDate: item.expiryDate ? item.expiryDate.split('T')[0] : '',
           category: item.category,
-          reminderDate: item.reminderDate ? item.reminderDate.split('T')[0] : '',
         });
       }
     } catch (error) {
@@ -80,19 +70,6 @@ const AddItem = () => {
       ...prev,
       quantity: Math.max(1, prev.quantity + delta),
     }));
-  };
-
-  const calculateReminderDate = (expiryDate, daysBefore) => {
-    if (!expiryDate || !daysBefore) return '';
-    const expiry = new Date(expiryDate);
-    expiry.setDate(expiry.getDate() - parseInt(daysBefore));
-    return expiry.toISOString().split('T')[0];
-  };
-
-  const handleReminderChange = (e) => {
-    const daysBefore = e.target.value;
-    const reminderDate = calculateReminderDate(formData.expiryDate, daysBefore);
-    setFormData(prev => ({ ...prev, reminderDate }));
   };
 
   const handleSubmit = async (e) => {
@@ -272,21 +249,8 @@ const AddItem = () => {
             </select>
           </div>
 
-          <div className="form-row">
-            <label>Reminder</label>
-            <select
-              className="form-select"
-              onChange={handleReminderChange}
-              defaultValue=""
-              style={{ maxWidth: '200px' }}
-            >
-              {reminderOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
 
-          <div className="form-actions">
+          <div className="form-actions" style={{border: 0, marginTop: "0"}}>
             <button
               type="button"
               className="btn btn-ghost"

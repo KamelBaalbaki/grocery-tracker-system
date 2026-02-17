@@ -1,6 +1,6 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_BASE_URL = 'http://localhost:';
+const API_BASE_URL = "http://localhost:";
 
 // Base URLs for each microservice
 const AUTH_URL = `${API_BASE_URL}4001/api/auth`;
@@ -8,25 +8,25 @@ const USERS_URL = `${API_BASE_URL}4001/api/users`;
 const ITEMS_URL = `${API_BASE_URL}4002/api/items`;
 const REMINDERS_URL = `${API_BASE_URL}4003/api/reminders`;
 const NOTIFICATIONS_URL = `${API_BASE_URL}4004/api/notifications`;
-const RECIPES_URL = `${API_BASE_URL}4004/api/recipes`;
+const RECIPES_URL = `${API_BASE_URL}4005/api/recipes`;
 
 // Create axios instance with default config
 const api = axios.create({
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor to handle errors
@@ -34,10 +34,15 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      // Only clear auth if token exists
+      const token = localStorage.getItem("token");
+
+      if (token) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      }
     }
+
     return Promise.reject(error);
   }
 );
@@ -48,17 +53,17 @@ export const authAPI = {
     const response = await api.post(`${AUTH_URL}/register`, userData);
     return response.data;
   },
-  
+
   login: async (credentials) => {
     const response = await api.post(`${AUTH_URL}/login`, credentials);
     return response.data;
   },
-  
+
   logout: async () => {
     const response = await api.post(`${USERS_URL}/logout`);
     return response.data;
   },
-  
+
   getMe: async () => {
     const response = await api.get(`${USERS_URL}/me`);
     return response.data;
@@ -71,17 +76,17 @@ export const itemsAPI = {
     const response = await api.get(ITEMS_URL);
     return response.data;
   },
-  
+
   create: async (itemData) => {
     const response = await api.post(ITEMS_URL, itemData);
     return response.data;
   },
-  
+
   update: async (itemId, itemData) => {
     const response = await api.put(`${ITEMS_URL}/${itemId}`, itemData);
     return response.data;
   },
-  
+
   delete: async (itemId) => {
     const response = await api.delete(`${ITEMS_URL}/${itemId}`);
     return response.data;
@@ -94,17 +99,20 @@ export const remindersAPI = {
     const response = await api.get(REMINDERS_URL);
     return response.data;
   },
-  
+
   create: async (reminderData) => {
     const response = await api.post(REMINDERS_URL, reminderData);
     return response.data;
   },
-  
+
   update: async (reminderId, reminderData) => {
-    const response = await api.put(`${REMINDERS_URL}/${reminderId}`, reminderData);
+    const response = await api.put(
+      `${REMINDERS_URL}/${reminderId}`,
+      reminderData,
+    );
     return response.data;
   },
-  
+
   delete: async (reminderId) => {
     const response = await api.delete(`${REMINDERS_URL}/${reminderId}`);
     return response.data;
@@ -112,7 +120,6 @@ export const remindersAPI = {
 };
 
 export const notificationsAPI = {
-
   create: async (notificationData) => {
     const response = await api.post(NOTIFICATIONS_URL, notificationData);
     return response.data;
@@ -125,7 +132,7 @@ export const notificationsAPI = {
 
   markAsRead: async (notificationId) => {
     const response = await api.put(
-      `${NOTIFICATIONS_URL}/${notificationId}/read`
+      `${NOTIFICATIONS_URL}/${notificationId}/read`,
     );
     return response.data;
   },
@@ -136,14 +143,27 @@ export const notificationsAPI = {
   },
 
   delete: async (notificationId) => {
-    const response = await api.delete(
-      `${NOTIFICATIONS_URL}/${notificationId}`
-    );
+    const response = await api.delete(`${NOTIFICATIONS_URL}/${notificationId}`);
     return response.data;
   },
 
   deleteAll: async () => {
     const response = await api.delete(NOTIFICATIONS_URL);
+    return response.data;
+  },
+};
+
+export const recipesAPI = {
+  getSuggestions: async (items, limit = 5) => {
+    const response = await api.post(`${RECIPES_URL}/suggestions`, {
+      items,
+      limit,
+    });
+    return response.data;
+  },
+
+  getById: async (recipeId) => {
+    const response = await api.get(`${RECIPES_URL}/${recipeId}`);
     return response.data;
   },
 };

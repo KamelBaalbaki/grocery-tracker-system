@@ -57,6 +57,15 @@ services:
       - ./backend/recipe-service:/app
     command: npm run dev
 
+  react-app:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host
+
   redis:
     image: redis:7
     container_name: redis

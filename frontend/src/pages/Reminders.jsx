@@ -58,7 +58,7 @@ const Reminders = () => {
     e.preventDefault();
 
     try {
-      const isoDate = new Date(reminderDate).toISOString(); // 🔥 convert to UTC
+      const isoDate = new Date(reminderDate).toISOString();
 
       await remindersAPI.update(editingId, {
         reminderDate: isoDate,
@@ -91,7 +91,7 @@ const Reminders = () => {
     const target = new Date(date);
     const diff = target - now;
 
-    if (diff <= 0) return { text: "Expired", color: "var(--danger)" };
+    if (diff <= 0) return { text: "Due Now", color: "var(--danger)" };
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -187,9 +187,6 @@ const Reminders = () => {
         )}
       </div>
 
-      {/* ===============================
-          MODAL (EDIT ONLY)
-      =================================*/}
       {showReminderModal && (
         <div className="modern-modal-overlay">
           <div className="modern-modal">

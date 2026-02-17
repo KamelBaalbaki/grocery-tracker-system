@@ -1,70 +1,50 @@
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Search, ChefHat, ExternalLink, Clock, Users } from 'lucide-react';
-import { itemsAPI } from '../services/api';
+import { useState, useEffect } from "react";
+import { ChefHat, Clock, Users, X } from "lucide-react";
+import { itemsAPI, recipesAPI } from "../services/api";
 
 const Recipes = () => {
-  const [searchParams] = useSearchParams();
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('ingredient') || '');
   const [items, setItems] = useState([]);
+  const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const sampleRecipes = [
-    { id: 1, name: 'Chicken Stir Fry', tags: ['chicken', 'vegetables'], time: '25 min', servings: 4, dietary: 'High Protein' },
-    { id: 2, name: 'Greek Yogurt Parfait', tags: ['yogurt', 'fruits'], time: '10 min', servings: 2, dietary: 'Vegetarian' },
-    { id: 3, name: 'Banana Oat Smoothie', tags: ['banana', 'oats', 'milk'], time: '5 min', servings: 1, dietary: 'Vegan' },
-    { id: 4, name: 'Grilled Steak', tags: ['steak', 'meat'], time: '30 min', servings: 2, dietary: 'High Protein' },
-    { id: 5, name: 'Fresh Fruit Salad', tags: ['fruit', 'healthy'], time: '15 min', servings: 4, dietary: 'Vegan' },
-    { id: 6, name: 'Protein Power Shake', tags: ['protein powder', 'milk'], time: '5 min', servings: 1, dietary: 'High Protein' },
-    { id: 7, name: 'Apple Cinnamon Oatmeal', tags: ['oats', 'apple'], time: '15 min', servings: 2, dietary: 'Vegan' },
-    { id: 8, name: 'Overnight Oats', tags: ['oats', 'milk', 'yogurt'], time: '5 min', servings: 1, dietary: 'Vegetarian' },
-  ];
-
-  const [filteredRecipes, setFilteredRecipes] = useState(sampleRecipes);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
   useEffect(() => {
-    fetchItems();
+    fetchItemsAndRecipes();
   }, []);
 
-  useEffect(() => {
-    filterRecipes();
-  }, [searchQuery]);
-
-  const fetchItems = async () => {
+  const fetchItemsAndRecipes = async () => {
     try {
-      const data = await itemsAPI.getAll();
-      setItems(data);
+      const groceryItems = await itemsAPI.getAll();
+      setItems(groceryItems);
+
+      const itemNames = groceryItems.map((i) => i.name);
+
+      if (itemNames.length > 0) {
+        const recipeResults = await recipesAPI.getSuggestions(itemNames, 8);
+        setRecipes(recipeResults);
+      }
     } catch (error) {
-      console.error('Failed to fetch items:', error);
+      console.error("Failed to fetch recipes:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const filterRecipes = () => {
-    if (!searchQuery.trim()) {
-      setFilteredRecipes(sampleRecipes);
-      return;
+  const openRecipeDetails = async (recipeId) => {
+    try {
+      setDetailsLoading(true);
+      setShowModal(true);
+
+      const details = await recipesAPI.getById(recipeId);
+      setSelectedRecipe(details);
+    } catch (error) {
+      console.error("Failed to fetch recipe details:", error);
+    } finally {
+      setDetailsLoading(false);
     }
-
-    const query = searchQuery.toLowerCase();
-    const filtered = sampleRecipes.filter(recipe =>
-      recipe.name.toLowerCase().includes(query) ||
-      recipe.tags.some(tag => tag.toLowerCase().includes(query))
-    );
-    setFilteredRecipes(filtered);
-  };
-
-  const getExpiringItems = () => {
-    const now = new Date();
-    const sevenDays = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    
-    return items
-      .filter(item => {
-        const expiry = new Date(item.expiryDate);
-        return expiry > now && expiry <= sevenDays;
-      })
-      .slice(0, 6);
   };
 
   if (loading) {
@@ -75,116 +55,69 @@ const Recipes = () => {
     );
   }
 
-  const expiringItems = getExpiringItems();
-
   return (
     <div className="fade-in">
       <div className="page-header">
-        <h1 className="page-title">Recipe Ideas</h1>
-        <p className="page-subtitle">Find recipes using ingredients you have</p>
+        <h1 className="page-title">Smart Recipe Suggestions</h1>
+        <p className="page-subtitle">Based on your grocery list ingredients</p>
       </div>
 
-      {/* Expiring Items Quick Filter */}
-      {expiringItems.length > 0 && (
-        <div className="insights-card" style={{ marginBottom: '1.5rem' }}>
-          <div className="insights-header" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <Clock size={20} style={{ color: 'var(--warning)' }} />
-            <span>Use These Soon</span>
-          </div>
-          <div style={{ padding: '1rem 1.5rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            {expiringItems.map(item => (
-              <button
-                key={item._id}
-                className="btn btn-sm btn-secondary"
-                onClick={() => setSearchQuery(item.name)}
-                style={{ 
-                  borderColor: searchQuery === item.name ? 'var(--primary)' : 'var(--border)',
-                  background: searchQuery === item.name ? 'rgba(124, 58, 237, 0.2)' : 'transparent'
-                }}
-              >
-                {item.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="table-container">
-        <div className="table-header">
-          <div className="search-box" style={{ maxWidth: '400px' }}>
-            <Search size={18} />
-            <input
-              type="text"
-              placeholder="Search by ingredient or recipe name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {filteredRecipes.length > 0 ? (
-          <div style={{ padding: '0.5rem' }}>
-            {filteredRecipes.map((recipe) => (
-              <div 
+        {recipes.length > 0 ? (
+          <div style={{ padding: "1rem" }}>
+            {recipes.map((recipe) => (
+              <div
                 key={recipe.id}
+                onClick={() => openRecipeDetails(recipe.id)}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '1.25rem 1.5rem',
-                  borderBottom: '1px solid var(--border)',
-                  transition: 'var(--transition)',
-                  cursor: 'pointer'
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "1.25rem",
+                  borderBottom: "1px solid var(--border)",
+                  cursor: "pointer",
+                  transition: "0.2s",
                 }}
                 className="recipe-row"
-                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-hover)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <div style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: 'var(--radius-md)',
-                    background: 'var(--primary-gradient)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <ChefHat size={24} color="white" />
-                  </div>
+                <div style={{ display: "flex", gap: "1rem" }}>
+                  <img
+                    src={recipe.image}
+                    alt={recipe.title}
+                    style={{
+                      width: "90px",
+                      height: "90px",
+                      borderRadius: "14px",
+                      objectFit: "cover",
+                    }}
+                  />
+
                   <div>
-                    <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
-                      {recipe.name}
+                    <div style={{ fontWeight: 600 }}>{recipe.title}</div>
+
+                    <div style={{ fontSize: "0.85rem", opacity: 0.7 }}>
+                      Uses {recipe.usedIngredientCount} of your ingredients
                     </div>
-                    <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                      {recipe.tags.join(' • ')}
-                    </div>
+
+                    {recipe.usedIngredients?.map((ing, index) => (
+                      <span
+                        key={index}
+                        style={{
+                          fontSize: "0.7rem",
+                          padding: "4px 8px",
+                          borderRadius: "20px",
+                          background: "rgba(34,197,94,0.15)",
+                          color: "#22c55e",
+                          marginRight: "6px",
+                        }}
+                      >
+                        {ing.name}
+                      </span>
+                    ))}
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
-                    <Clock size={14} />
-                    <span style={{ fontSize: '0.875rem' }}>{recipe.time}</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)' }}>
-                    <Users size={14} />
-                    <span style={{ fontSize: '0.875rem' }}>{recipe.servings}</span>
-                  </div>
-                  <span style={{
-                    padding: '0.25rem 0.75rem',
-                    background: 'var(--success-bg)',
-                    color: 'var(--success)',
-                    borderRadius: '50px',
-                    fontSize: '0.75rem',
-                    fontWeight: 600
-                  }}>
-                    {recipe.dietary}
-                  </span>
-                  <button className="btn btn-sm btn-secondary">
-                    View <ExternalLink size={14} />
-                  </button>
-                </div>
+                <ChefHat size={22} />
               </div>
             ))}
           </div>
@@ -192,10 +125,102 @@ const Recipes = () => {
           <div className="empty-state">
             <ChefHat size={80} />
             <h3>No recipes found</h3>
-            <p>Try a different search term</p>
+            <p>Add more grocery items to get better suggestions</p>
           </div>
         )}
       </div>
+
+      {showModal && (
+        <div
+          className="modern-modal-overlay"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.65)",
+            backdropFilter: "blur(6px)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            className="modern-modal"
+            style={{
+              width: "75%",
+              maxHeight: "90vh",
+              background: "var(--bg-card)",
+              borderRadius: "20px",
+              padding: "2rem",
+              overflowY: "auto",
+              position: "relative",
+              boxShadow: "0 40px 80px rgba(0,0,0,0.4)",
+            }}
+          >
+            <button
+              onClick={() => {
+                setShowModal(false);
+                setSelectedRecipe(null);
+              }}
+              style={{
+                position: "absolute",
+                top: "20px",
+                right: "20px",
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              <X />
+            </button>
+
+            {detailsLoading ? (
+              <div className="spinner" />
+            ) : (
+              selectedRecipe && (
+                <>
+                  <h2 style={{ marginBottom: "1rem" }}>
+                    {selectedRecipe.title}
+                  </h2>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "2rem",
+                      marginBottom: "1.5rem",
+                      color: "var(--text-secondary)",
+                    }}
+                  >
+                    <div>
+                      <Clock size={16} /> {selectedRecipe.totalTime || "N/A"}{" "}
+                      mins
+                    </div>
+                    <div>
+                      <Users size={16} /> {selectedRecipe.servings} servings
+                    </div>
+                  </div>
+
+                  <h3>Ingredients</h3>
+                  <ul>
+                    {selectedRecipe.ingredients?.map((ing, index) => (
+                      <li key={index}>{ing.amount}</li>
+                    ))}
+                  </ul>
+
+                  <h3 style={{ marginTop: "1.5rem" }}>Instructions</h3>
+                  <ol>
+                    {selectedRecipe.instructions?.map((step) => (
+                      <li key={step.number} style={{ marginBottom: "0.75rem" }}>
+                        {step.step}
+                      </li>
+                    ))}
+                  </ol>
+                </>
+              )
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
