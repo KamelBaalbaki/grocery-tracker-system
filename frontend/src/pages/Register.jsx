@@ -12,7 +12,6 @@ const Register = () => {
     fullName: '',
     email: '',
     password: '',
-    accountType: 'Individual',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -163,34 +162,6 @@ const Register = () => {
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
                 Min 8 chars with uppercase, lowercase, number & special character
               </p>
-            </div>
-            
-            <div className="form-group">
-              <label className="form-label">Account Type</label>
-              <div style={{ position: 'relative' }}>
-                <Building2 
-                  size={18} 
-                  style={{ 
-                    position: 'absolute', 
-                    left: '1rem', 
-                    top: '50%', 
-                    transform: 'translateY(-50%)',
-                    color: 'var(--text-muted)',
-                    pointerEvents: 'none'
-                  }} 
-                />
-                <select
-                  name="accountType"
-                  className="form-select"
-                  style={{ paddingLeft: '2.75rem' }}
-                  value={formData.accountType}
-                  onChange={handleChange}
-                >
-                  <option value="Individual">Individual</option>
-                  <option value="Family">Family</option>
-                  <option value="Business">Business</option>
-                </select>
-              </div>
             </div>
             
             <button 
