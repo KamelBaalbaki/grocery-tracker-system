@@ -25,7 +25,7 @@ const getUserNotifications = async (req, res) => {
 const markNotificationAsRead = async (req, res) => {
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.notificationId)) {
-            return res.status(404).json({ message: "Notification not found"});
+            return res.status(404).json({ message: "Invalid notification ID" });
         } const notification = await notificationService.markNotificationAsRead(
             req.user.id,
             req.params.notificationId,
@@ -63,7 +63,7 @@ const markAllNotificationsAsRead = async (req, res) => {
 const deleteNotification = async (req, res) => {
     try {
         if (!mongoose.Types.ObjectId.isValid(req.params.notificationId)) {
-            return res.status(404).json({ message: "notification not found" });
+            return res.status(404).json({ message: "Invalid notification ID" });
         }
         const notification = await notificationService.deleteNotification(req.user.id, req.params.notificationId);
         if (!notification) {

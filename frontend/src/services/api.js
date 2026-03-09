@@ -1,14 +1,14 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:";
+const API_BASE_URL = "http://localhost:4000";
 
 // Base URLs for each microservice
-const AUTH_URL = `${API_BASE_URL}4001/api/auth`;
-const USERS_URL = `${API_BASE_URL}4001/api/users`;
-const ITEMS_URL = `${API_BASE_URL}4002/api/items`;
-const REMINDERS_URL = `${API_BASE_URL}4003/api/reminders`;
-const NOTIFICATIONS_URL = `${API_BASE_URL}4004/api/notifications`;
-const RECIPES_URL = `${API_BASE_URL}4005/api/recipes`;
+const AUTH_URL = `${API_BASE_URL}/api/auth`;
+const USERS_URL = `${API_BASE_URL}/api/users`;
+const ITEMS_URL = `${API_BASE_URL}/api/items`;
+const REMINDERS_URL = `${API_BASE_URL}/api/reminders`;
+const NOTIFICATIONS_URL = `${API_BASE_URL}/api/notifications`;
+const RECIPES_URL = `${API_BASE_URL}/api/recipes`;
 
 // Create axios instance with default config
 const api = axios.create({
@@ -120,10 +120,6 @@ export const remindersAPI = {
 };
 
 export const notificationsAPI = {
-  create: async (notificationData) => {
-    const response = await api.post(NOTIFICATIONS_URL, notificationData);
-    return response.data;
-  },
 
   getAll: async () => {
     const response = await api.get(NOTIFICATIONS_URL);

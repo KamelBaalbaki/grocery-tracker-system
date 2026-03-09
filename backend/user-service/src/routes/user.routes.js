@@ -1,22 +1,14 @@
 const express = require("express");
 const router = express.Router();
-const protect = require("../middleware/auth.middleware");
+const auth = require("../middleware/auth.middleware");
 const userController = require("../controllers/user.controller");
 
+router.use(auth);
 
-// Get current logged-in user
-router.get("/me", protect, userController.getMe);
-
-// Get user by ID (protected)
-router.get("/:id", protect, userController.getUserById);
-
-// Update user
-router.put("/:id", protect, userController.updateUser);
-
-// Delete user
-router.delete("/:id", protect, userController.deleteUser);
-
-// Logout current user
-router.post("/logout", protect, userController.logout);
+router.get("/me", userController.getMe);
+router.get("/:id", userController.getUserById);
+router.put("/:id", userController.updateUser);
+router.delete("/:id", userController.deleteUser);
+router.post("/logout", userController.logout);
 
 module.exports = router;

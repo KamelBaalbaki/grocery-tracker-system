@@ -1,6 +1,6 @@
 const redis = require('../config/redis');
 
-const publishReminderSet = async ({ userId, reminder, itemName }) => {
+const publishReminderSet = async ({ userId, reminder }) => {
     await redis.xAdd("notifications.events", "*", {
         type: "reminder.set",
         userId: userId.toString(),
@@ -9,7 +9,7 @@ const publishReminderSet = async ({ userId, reminder, itemName }) => {
         reminderDate: reminder.reminderDate.toISOString(),
     });
 };
-const publishReminderDue = async ({ userId, reminder, itemName }) => {
+const publishReminderDue = async ({ userId, reminder }) => {
     await redis.xAdd("notifications.events", "*", {
         type: "reminder.due",
         userId: userId.toString(),

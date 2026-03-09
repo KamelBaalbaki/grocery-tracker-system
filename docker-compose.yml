@@ -1,4 +1,20 @@
 services:
+  api-gateway:
+      build: ./backend/api-gateway
+      ports:
+        - "4000:4000"
+      env_file:
+        - ./backend/api-gateway/.env
+      volumes:
+        - ./backend/api-gateway:/app
+      command: npm run dev
+      depends_on:
+      - user-service
+      - item-service
+      - reminder-service
+      - notification-service
+      - recipe-service
+
   user-service:
     build: ./backend/user-service
     ports:
