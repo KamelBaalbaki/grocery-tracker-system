@@ -143,7 +143,7 @@ const Notifications = () => {
                   <td>
                     {notification.message}
                     {notification.reminderDate && (
-                      <span style={{ fontSize: ".9rem", opacity: 0.7 }}>
+                      <span>
                         {new Date(notification.reminderDate).toLocaleString()}
                       </span>
                     )}

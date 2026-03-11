@@ -37,8 +37,6 @@ services:
 
   item-service-worker:
     build: ./backend/item-service
-    env_file:
-      - ./backend/item-service/.env
     volumes:
       - ./backend/item-service:/app
     command: node src/worker.js
@@ -52,6 +50,12 @@ services:
       volumes:
         - ./backend/reminder-service:/app
       command: npm run dev
+
+  reminder-service-worker:
+    build: ./backend/reminder-service
+    volumes:
+      - ./backend/reminder-service:/app
+    command: node src/worker.js
 
   notification-service:
     build: ./backend/notification-service

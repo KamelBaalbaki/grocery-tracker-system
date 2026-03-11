@@ -22,6 +22,7 @@ const createItem = async (req, res) => {
 
         await publishItemExpired({
           userId: req.user.id,
+          email: req.user.email,
           item: expiredItem
         });
 
@@ -92,6 +93,7 @@ const updateItem = async (req, res) => {
 
             await publishItemExpired({
               userId: expiredItem.userId,
+              email: req.user.email,
               item: expiredItem
             });
 

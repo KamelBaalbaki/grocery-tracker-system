@@ -9,10 +9,11 @@ const publishItemCreated = async ({ userId, item }) => {
     });
 };
 
-const publishItemExpired = async ({ userId, item }) => {
+const publishItemExpired = async ({ userId, email, item }) => {
     await redis.xAdd("notifications.events", "*", {
         type: "item.expired",
         userId: userId.toString(),
+        email: email,
         itemId: item._id.toString(),
         itemName: item.name,
     });

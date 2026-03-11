@@ -1,7 +1,10 @@
 const mongoose = require("mongoose");
 const reminderService = require("../services/reminder.service");
-const { agenda } = require("../config/agenda");
-const { publishReminderSet, publishReminderDue } = require("../events/publishReminderEvents");
+const redis = require("../config/redis");
+const {
+  publishReminderSet,
+  publishReminderDue,
+} = require("../events/publishReminderEvents");
 
 const createReminder = async (req, res) => {
   try {
@@ -30,17 +33,23 @@ const createReminder = async (req, res) => {
       req.user.id,
       itemId,
       reminderData,
-      itemName
+      itemName,
     );
 
-    await agenda.schedule(reminder.reminderDate, "send reminder", {
-      reminderId: reminder._id.toString(),
+    await redis.zAdd("reminder:due", {
+      score: new Date(reminder.reminderDate).getTime(),
+      value: JSON.stringify({
+        reminderId: reminder._id.toString(),
+        email: req.user.email,
+        userId: req.user.id,
+      }),
     });
 
     await publishReminderSet({
       userId: req.user.id,
+      email: req.user.email,
       reminder,
-      itemName: reminder.itemName
+      itemName: reminder.itemName,
     });
 
     res.status(201).json(reminder);
@@ -72,44 +81,46 @@ const updateReminder = async (req, res) => {
     }
 
     const reminder = await reminderService.updateReminder(
-        req.params.reminderId,
-        req.user.id,
-        req.body
+      req.params.reminderId,
+      req.user.id,
+      req.body,
     );
 
     if (!reminder) {
       return res.status(404).json({ message: "Reminder not found" });
     }
 
-    await agenda.cancel({
-      name: "send reminder",
-      "data.reminderId": req.params.reminderId.toString(),
-    });
+    await redis.zRem("reminder:due", req.params.reminderId.toString());
 
     const now = new Date();
 
     if (reminder.reminderDate <= now) {
-
       await publishReminderDue({
         userId: req.user.id,
+        email: req.user.email,
         reminder,
-        itemName: reminder.itemName
+        itemName: reminder.itemName,
       });
       reminder.status = "sent";
       await reminder.save();
     } else {
-
       reminder.status = "pending";
       await reminder.save();
 
-      await agenda.schedule(reminder.reminderDate, "send reminder", {
+      await redis.zAdd("reminder:due", {
+      score: new Date(reminder.reminderDate).getTime(),
+      value: JSON.stringify({
         reminderId: reminder._id.toString(),
-      });
+        email: req.user.email,
+        userId: req.user.id,
+      }),
+    });
 
       await publishReminderSet({
         userId: req.user.id,
+        email: req.user.email,
         reminder,
-        itemName: reminder.itemName
+        itemName: reminder.itemName,
       });
     }
 
@@ -135,10 +146,7 @@ const deleteReminder = async (req, res) => {
       return res.status(404).json({ message: "Reminder not found" });
     }
 
-    await agenda.cancel({
-      name: "send reminder",
-      "data.reminderId": req.params.reminderId.toString(),
-    });
+    await redis.zRem("reminder:due", req.params.reminderId.toString());
 
     res.status(200).json({ message: "Reminder deleted successfully" });
   } catch (error) {
