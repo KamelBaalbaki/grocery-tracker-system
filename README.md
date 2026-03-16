@@ -1,6 +1,6 @@
 # Smart Grocery Tracker
 _T197 Capstone Project for George Brown College_
-##### Group Members:
+## Group Members:
 - 101496645 Kamel Baalbaki 
 - 101499536 Libareo Barbour 
 - 101498572 Thomas del Mundo 
@@ -14,20 +14,20 @@ The primary objective of the application is to reduce food waste and its environ
 ## Features
 The Grocery Tracker application provides the following key features:
 
-__User Management__
+### User Management
 - User Registration & Login: Secure authentication using JWT tokens and password hashing with bcrypt.
 - Profile Management: View, update, or delete your account.
 - Logout: Stateless logout to protect user sessions.
 
-__Inventory Management__
+### Inventory Management
 - Food Inventory Tracking: Add, edit, and remove items from your inventory.
 - Expiration Alerts: Monitor expiry dates to prevent food waste.
 - Quantity Management: Keep track of remaining stock to avoid over-purchasing.
 
-__Notifications__
+### Notifications 
 - Email Alerts: Receive notifications for low stock or expiring items (via nodemailer).
 
-__Full-Stack Architecture__
+### Full-Stack Architecture
 - Frontend: Built with React for responsive user interface and real-time updates.
 - Backend: Node.js with Express for API endpoints and business logic.
 - Database: MongoDB with Mongoose for efficient data storage and querying.
@@ -37,57 +37,59 @@ __Full-Stack Architecture__
 ## Technologies Used
 This project was built using a full-stack JavaScript architecture and the following technologies:
 
-__Frontend__
+### Frontend 
 - React.js
 - React Router
 - Vite
 - CSS3
 
-__Backend__
-- Node.js
+### Backend
+- [Node.js](https://nodejs.org/en)
 - Express.js
 - Redis + Insight
 
-__Database__
-- MongoDB
+### Database
+- [MongoDB](https://www.mongodb.com/)
 - Mongoose
 
-__Authentication & Security__
+### Authentication & Security
 - JSON Web Tokens (JWT)
 - Bcryptjs
 
-__Development Tools__
-- Docker
-- Postman
+### Development Tools
+- [Docker](https://www.docker.com/)
+- [Postman](https://www.postman.com/)
 - Git
 - Node Package Manager _`npm`_
 
 ## Key Backend Dependencies
-* express – Backend web framework
-* mongoose – MongoDB object modeling
-* bcryptjs – Password hashing
-* jsonwebtoken – Authentication tokens
-* dotenv – Environment variable management
-* cors – Cross-origin request handling
-* nodemailer - Email notifications
-
-_*This project uses a .env file to store sensitive configuration values such as API keys, authentication secrets, and service credentials. For security and privacy reasons, the .env file is not included in the GitHub repository and is listed in `.gitignore`._
+* __express__ – Backend web framework
+* __mongoose__ – MongoDB object modeling
+* __bcryptjs__ – Password hashing
+* __jsonwebtoken__ – Authentication tokens
+* __dotenv__ – Environment variable management
+* __cors__ – Cross-origin request handling
+* __nodemailer__ - Email notifications
+> [!IMPORTANT]
+> _*This project uses a .env file to store sensitive configuration values such as API keys, authentication secrets, and service credentials. For security and privacy reasons, the `.env` file is not included in the GitHub repository and is listed in `.gitignore`._
 
 # Setup Installation
-### 1. Clone Repository
+## 1. Clone Repository
 ```
 git clone https://github.com/KamelBaalbaki/grocery-tracker-system
 ```
 Enter the project folder.
 
-### 2. Install Dependencies
-Each service (e.g., user-service, notification-service, frontend) has its own dependencies. Navigate to each folder and run:
+## 2. Install Dependencies
+Each service (e.g., `user-service`, `notification-service`, frontend) has its own dependencies (`node_modules`). Navigate to each folder and run:
 ```
 npm install
 ```
+> [!TIP]
+> You may check errors when running each service to find any missing dependencies, then install those dependencies
 
-### 3. Create Environment Variables
-Create a .env file in each service that requires it and add the necessary keys. Example:
+## 3. Create Environment Variables
+Create a `.env` file in each service that requires it and add the necessary keys. Example:
 ```
 # user-service/.env
 PORT=5000
@@ -100,8 +102,11 @@ PORT=6000
 EMAIL_USER=your_email@example.com
 EMAIL_PASS=your_email_password
 ```
-### 4. Run the Application
-_*Make sure docker is already running._
+Repeat for all services.
+
+## 4. Run the Application
+> [!IMPORTANT]
+> _*Make sure docker is already running._
 ```
 docker compose up --build
 ```
