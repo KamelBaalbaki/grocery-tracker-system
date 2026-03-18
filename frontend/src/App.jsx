@@ -1,24 +1,23 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
 
-// Layout Components
-import Navbar from './components/Layout/Navbar';
-import Sidebar from './components/Layout/Sidebar';
+// Layout
+import DashboardLayout from "./layout/DashboardLayout";
 
 // Pages
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import GroceryList from './pages/GroceryList';
-import AddItem from './pages/AddItem';
-import Notifications from './pages/Notifications';
-import Recipes from './pages/Recipes';
-import EcoInsights from './pages/EcoInsights';
-import Settings from './pages/Settings';
-import Reminders from './pages/Reminders';
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import GroceryList from "./pages/GroceryList";
+import AddItem from "./pages/AddItem";
+import Notifications from "./pages/Notifications";
+import Reminders from "./pages/Reminders";
+import Recipes from "./pages/Recipes";
+import EcoInsights from "./pages/EcoInsights";
+import Settings from "./pages/Settings";
 
-// Protected Route Component
+// Protected Route
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
@@ -31,25 +30,10 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;
-};
-
-// Dashboard Layout Component
-const DashboardLayout = ({ children }) => {
-  return (
-    <div className="app-container">
-      <Navbar />
-      <div className="dashboard-layout">
-        <Sidebar />
-        <main className="main-content">
-          {children}
-        </main>
-      </div>
-    </div>
-  );
 };
 
 function App() {
@@ -58,20 +42,28 @@ function App() {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route 
-        path="/" 
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Home />} 
-      />
-      <Route 
-        path="/login" 
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} 
-      />
-      <Route 
-        path="/register" 
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />} 
+      <Route
+        path="/"
+        element={
+          isAuthenticated ? <Navigate to="/dashboard" replace /> : <Home />
+        }
       />
 
-      {/* Protected Routes */}
+      <Route
+        path="/login"
+        element={
+          isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />
+        }
+      />
+
+      <Route
+        path="/register"
+        element={
+          isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />
+        }
+      />
+
+      {/* Protected Dashboard */}
       <Route
         path="/dashboard"
         element={
@@ -82,6 +74,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/grocery-list"
         element={
@@ -92,6 +85,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/add-item"
         element={
@@ -112,22 +106,22 @@ function App() {
           </ProtectedRoute>
         }
       />
+       <Route
+        path="/notifications"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout>
+              <Notifications />
+            </DashboardLayout>
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/reminders"
         element={
           <ProtectedRoute>
             <DashboardLayout>
               <Reminders />
-            </DashboardLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/notifications"
-        element={
-          <ProtectedRoute>
-            <DashboardLayout>
-              <Notifications />
             </DashboardLayout>
           </ProtectedRoute>
         }
@@ -142,7 +136,7 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route
+       <Route
         path="/eco-insights"
         element={
           <ProtectedRoute>
@@ -163,7 +157,7 @@ function App() {
         }
       />
 
-      {/* Catch all - redirect to home */}
+      {/* Catch all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

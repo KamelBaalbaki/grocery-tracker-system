@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { notificationsAPI } from "../services/api";
-import { Bell, CheckCircle, Trash2 } from "lucide-react";
+import { Bell, CheckCircle, Trash2, CheckCheck } from "lucide-react";
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -14,7 +14,6 @@ const Notifications = () => {
     try {
       const data = await notificationsAPI.getAll();
 
-      // Sort newest first
       const sorted = data.sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
       );
@@ -30,6 +29,7 @@ const Notifications = () => {
   const markAsRead = async (id) => {
     try {
       await notificationsAPI.markAsRead(id);
+
       setNotifications((prev) =>
         prev.map((n) => (n._id === id ? { ...n, isRead: true } : n)),
       );
@@ -65,121 +65,119 @@ const Notifications = () => {
     }
   };
 
-  const formatDate = (date) => {
-    return new Date(date).toLocaleString();
-  };
+  const formatDate = (date) => new Date(date).toLocaleString();
 
   if (loading) {
     return (
-      <div className="loading">
-        <div className="spinner"></div>
+      <div className="flex justify-center items-center h-[50vh]">
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="fade-in">
-      <div className="page-header">
-        <h1 className="page-title">Notifications</h1>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <p className="page-subtitle">
-            Stay updated with your reminders and item alerts
-          </p>
+    <div className="space-y-8">
+      <button
+        className="absolute bottom-14 right-6 flex items-center rounded-full p-2 text-primary hover:scale-[1.15] hover:bg-primary/30 hover:border hover:border-primary hover:text-white transition duration-500"
+        onClick={markAllAsRead}
+        title="Mark All As Read"
+      >
+        <CheckCheck size={28} />
+      </button>
 
-          {notifications.length > 0 && (
-            <div style={{ display: "flex", gap: "1rem" }}>
-              <button className="action-btn" onClick={markAllAsRead}>
-                Mark All Read
-              </button>
-              <button
-                className="action-btn delete"
-                onClick={deleteAllNotifications}
-              >
-                Delete All
-              </button>
-            </div>
-          )}
+      <button
+        className="absolute bottom-0 right-6 flex items-center rounded-full p-2 text-primary hover:scale-[1.15] hover:bg-primary/30 hover:border hover:border-primary hover:text-red-500 transition duration-500"
+        onClick={deleteAllNotifications}
+        title="Delete All Notifications"
+      >
+        <Trash2 size={28} />
+      </button>
+
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gradient">Notifications</h1>
+
+          <p className="text-muted-foreground text-sm mt-1">
+            {notifications.length} notifications
+          </p>
         </div>
       </div>
 
-      <div className="table-container">
-        {notifications.length > 0 ? (
-          <table className="data-table">
+      {notifications.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full table-fixed text-sm border-separate border-spacing-y-3">
             <thead>
-              <tr>
-                <th>Status</th>
+              <tr className="text-left table-fixed text-muted-foreground text-xs uppercase tracking-wide">
+                <th className="pl-4">Status</th>
                 <th>Title</th>
                 <th>Message</th>
                 <th>Date</th>
-                <th>Action</th>
+                <th className="text-right pr-6">Actions</th>
               </tr>
             </thead>
+
             <tbody>
               {notifications.map((notification) => (
                 <tr
                   key={notification._id}
-                  style={{
-                    background: notification.isRead
-                      ? "transparent"
-                      : "rgba(0, 123, 255, 0.05)",
-                  }}
+                  className={`shadow-sm text-primary hover:shadow-md hover:text-foreground transition rounded-xl
+                  ${notification.isRead ? "bg-white" : "bg-primary/80 glass glass-strong"}`}
                 >
-                  <td>
+                  <td className="p-4 rounded-l-xl">
                     {notification.isRead ? (
-                      <CheckCircle size={18} color="var(--success)" />
+                      <CheckCircle size={18} />
                     ) : (
-                      <Bell size={18} color="var(--primary)" />
+                      <Bell size={18} />
                     )}
                   </td>
 
-                  <td style={{ fontWeight: 600 }}>{notification.title}</td>
+                  <td className="font-medium">{notification.title}</td>
 
-                  <td>
+                  <td className="text-muted-foreground">
                     {notification.message}
+
                     {notification.reminderDate && (
-                      <span>
+                      <div className="text-xs text-primary mt-1">
                         {new Date(notification.reminderDate).toLocaleString()}
-                      </span>
+                      </div>
                     )}
                   </td>
 
-                  <td>{formatDate(notification.createdAt)}</td>
+                  <td className="text-muted-foreground">
+                    {formatDate(notification.createdAt)}
+                  </td>
 
-                  <td style={{ display: "flex", gap: "0.5rem" }}>
-                    {!notification.isRead && (
+                  <td className="rounded-r-xl pr-6">
+                    <div className="flex justify-end gap-2">
+                      {!notification.isRead && (
+                        <button
+                          onClick={() => markAsRead(notification._id)}
+                          className="p-2 hover:scale-[1.15] transition-transofrm duration-500"
+                        >
+                          <CheckCircle size={16} />
+                        </button>
+                      )}
+
                       <button
-                        className="action-btn"
-                        onClick={() => markAsRead(notification._id)}
+                        onClick={() => deleteNotification(notification._id)}
+                        className="p-2 hover:scale-[1.15] transition-transofrm duration-500"
                       >
-                        <CheckCircle size={14} />
+                        <Trash2 size={16} />
                       </button>
-                    )}
-
-                    <button
-                      className="action-btn delete"
-                      onClick={() => deleteNotification(notification._id)}
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        ) : (
-          <div className="empty-state">
-            <Bell size={80} />
-            <h3>No notifications</h3>
-            <p>You're all caught up 🎉</p>
-          </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+          <Bell size={70} className="opacity-40 mb-6" />
+          <h3 className="text-lg font-semibold">No notifications</h3>
+          <p className="text-sm">You're all caught up</p>
+        </div>
+      )}
     </div>
   );
 };

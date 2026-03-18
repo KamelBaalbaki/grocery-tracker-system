@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { remindersAPI } from "../services/api";
-import { Edit3, Trash2, Clock } from "lucide-react";
+import { Edit2, Trash2, Clock } from "lucide-react";
 
 const Reminders = () => {
   const [reminders, setReminders] = useState([]);
@@ -41,13 +41,9 @@ const Reminders = () => {
       id: reminder.itemId,
     });
 
-    const toLocalInputFormat = (date) => {
-      const d = new Date(date);
-      d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-      return d.toISOString().slice(0, 16);
-    };
-
-    setReminderDate(toLocalInputFormat(reminder.reminderDate));
+    const d = new Date(reminder.reminderDate);
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    setReminderDate(d.toISOString().slice(0, 16));
 
     setReminderMessage(reminder.message || "");
 
@@ -91,43 +87,48 @@ const Reminders = () => {
     const target = new Date(date);
     const diff = target - now;
 
-    if (diff <= 0) return { text: "Due Now", color: "var(--danger)" };
+    if (diff <= 0) return { text: "Due Now", color: "text-red-500" };
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
     if (days > 0) {
-      return { text: `${days}d ${hours}h`, color: "var(--warning)" };
+      return { text: `${days}d ${hours}h`, color: "text-yellow-500" };
     }
 
-    return { text: `${hours}h`, color: "var(--danger)" };
+    return { text: `${hours}h`, color: "text-red-500" };
   };
 
   if (loading) {
     return (
-      <div className="loading">
-        <div className="spinner"></div>
+      <div className="flex justify-center items-center h-[50vh]">
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="fade-in">
-      <div className="page-header">
-        <h1 className="page-title">Reminders</h1>
-        <p className="page-subtitle">Manage your item reminders</p>
+    <div className="space-y-8">
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gradient">Reminders</h1>
+
+          <p className="text-muted-foreground text-sm mt-1">
+            {reminders.length} reminders scheduled
+          </p>
+        </div>
       </div>
 
-      <div className="table-container">
-        {reminders.length > 0 ? (
-          <table className="data-table">
+      {reminders.length > 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full table-fixed text-sm border-separate border-spacing-y-3">
             <thead>
-              <tr>
-                <th>Item</th>
+              <tr className="text-left table-fixed text-muted-foreground text-xs uppercase tracking-wide">
+                <th className="pl-4">Item</th>
                 <th>Reminder Date</th>
                 <th>Countdown</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th className="text-right pr-6">Actions</th>
               </tr>
             </thead>
 
@@ -136,20 +137,19 @@ const Reminders = () => {
                 const countdown = getCountdown(reminder.reminderDate);
 
                 return (
-                  <tr key={reminder._id}>
-                    <td>{reminder.itemName}</td>
+                  <tr
+                    key={reminder._id}
+                    className="bg-primary/20 glass glass-strong shadow-sm text-primary hover:shadow-md hover:text-foreground transition rounded-xl"
+                  >
+                    <td className="p-4 font-medium rounded-l-xl">
+                      {reminder.itemName}
+                    </td>
 
                     <td>{new Date(reminder.reminderDate).toLocaleString()}</td>
 
                     <td>
                       <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                          color: countdown.color,
-                          fontWeight: 600,
-                        }}
+                        className={`flex items-center gap-2 font-semibold ${countdown.color}`}
                       >
                         <Clock size={14} />
                         {countdown.text}
@@ -158,78 +158,95 @@ const Reminders = () => {
 
                     <td>{reminder.status}</td>
 
-                    <td style={{ display: "flex", gap: "0.5rem" }}>
-                      <button
-                        className="action-btn"
-                        onClick={() => openEditModal(reminder)}
-                      >
-                        <Edit3 size={14} />
-                      </button>
+                    <td className="rounded-r-xl pr-6">
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => openEditModal(reminder)}
+                          className="p-2 hover:scale-[1.15] transition-transofrm duration-500"
+                        >
+                          <Edit2 size={16} />
+                        </button>
 
-                      <button
-                        className="action-btn delete"
-                        onClick={() => handleDelete(reminder._id)}
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                        <button
+                          onClick={() => handleDelete(reminder._id)}
+                          className="p-2 hover:scale-[1.15] transition-transofrm duration-500"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-        ) : (
-          <div className="empty-state">
-            <Clock size={80} />
-            <h3>No reminders yet</h3>
-            <p>Reminders will appear here once created</p>
-          </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+          <Clock size={70} className="opacity-40 mb-6" />
+
+          <h3 className="text-lg font-semibold">No reminders yet</h3>
+
+          <p className="text-sm">Reminders will appear here once created</p>
+        </div>
+      )}
+
+      {/* EDIT MODAL */}
 
       {showReminderModal && (
-        <div className="modern-modal-overlay">
-          <div className="modern-modal">
-            <div className="modal-header">
-              <div className="modal-icon">
-                <Clock size={20} />
-              </div>
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+          <div className="bg-white rounded-2xl shadow-xl w-[420px] p-6 space-y-6">
+            <div className="flex items-start gap-3">
+              <Clock size={22} className="text-primary" />
+
               <div>
-                <h2>Edit Reminder</h2>
-                <p>{selectedItem?.name}</p>
+                <h2 className="text-lg font-semibold">Edit Reminder</h2>
+
+                <p className="text-sm text-muted-foreground">
+                  {selectedItem?.name}
+                </p>
               </div>
             </div>
 
-            <form onSubmit={handleReminderSubmit} className="modal-form">
-              <div className="input-group">
-                <label>Date & Time</label>
+            <form onSubmit={handleReminderSubmit} className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-sm font-medium">Date & Time</label>
+
                 <input
                   type="datetime-local"
                   value={reminderDate}
                   onChange={(e) => setReminderDate(e.target.value)}
                   required
+                  className="w-full border border-border rounded-lg px-3 py-2"
                 />
               </div>
 
-              <div className="input-group">
-                <label>Message (optional)</label>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">
+                  Message (optional)
+                </label>
+
                 <input
                   type="text"
                   value={reminderMessage}
                   onChange={(e) => setReminderMessage(e.target.value)}
+                  className="w-full border border-border rounded-lg px-3 py-2"
                 />
               </div>
 
-              <div className="modal-actions">
+              <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="button"
-                  className="btn-secondary"
                   onClick={() => setShowReminderModal(false)}
+                  className="px-4 py-2 rounded-lg border border-border hover:scale-[1.02] transition duration-500 hover:shadow-lg"
                 >
                   Cancel
                 </button>
 
-                <button type="submit" className="btn-primary">
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg background-gradient text-white hover:scale-[1.02] transition duration-500 hover:shadow-xl"
+                >
                   Update Reminder
                 </button>
               </div>

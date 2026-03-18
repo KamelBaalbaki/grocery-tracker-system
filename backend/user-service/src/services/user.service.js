@@ -16,7 +16,7 @@ const findUserByEmail = async (email) => {
 };
 
 const getUserById = async (id) => {
-  return await User.findById(id).select("-password");
+  return await User.findById(id);
 };
 
 const updateUser = async (id, data) => {

@@ -49,178 +49,194 @@ const Recipes = () => {
 
   if (loading) {
     return (
-      <div className="loading">
-        <div className="spinner"></div>
+      <div className="flex justify-center items-center h-[50vh]">
+        <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="fade-in">
-      <div className="page-header">
-        <h1 className="page-title">Smart Recipe Suggestions</h1>
-        <p className="page-subtitle">Based on your grocery list ingredients</p>
+    <div className="space-y-8">
+
+      {/* HEADER */}
+
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gradient">
+            Smart Recipe Suggestions
+          </h1>
+
+          <p className="text-muted-foreground text-sm mt-1">
+            Based on your grocery list ingredients
+          </p>
+        </div>
       </div>
 
-      <div className="table-container">
-        {recipes.length > 0 ? (
-          <div style={{ padding: "1rem" }}>
-            {recipes.map((recipe) => (
-              <div
-                key={recipe.id}
-                onClick={() => openRecipeDetails(recipe.id)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "1.25rem",
-                  borderBottom: "1px solid var(--border)",
-                  cursor: "pointer",
-                  transition: "0.2s",
-                }}
-                className="recipe-row"
-              >
-                <div style={{ display: "flex", gap: "1rem" }}>
-                  <img
-                    src={recipe.image}
-                    alt={recipe.title}
-                    style={{
-                      width: "90px",
-                      height: "90px",
-                      borderRadius: "14px",
-                      objectFit: "cover",
-                    }}
-                  />
+      {/* RECIPES LIST */}
 
-                  <div>
-                    <div style={{ fontWeight: 600 }}>{recipe.title}</div>
+      {recipes.length > 0 ? (
 
-                    <div style={{ fontSize: "0.85rem", opacity: 0.7 }}>
-                      Uses {recipe.usedIngredientCount} of your ingredients
-                    </div>
+        <div className="grid md:grid-cols-2 gap-6">
 
-                    {recipe.usedIngredients?.map((ing, index) => (
-                      <span
-                        key={index}
-                        style={{
-                          fontSize: "0.7rem",
-                          padding: "4px 8px",
-                          borderRadius: "20px",
-                          background: "rgba(34,197,94,0.15)",
-                          color: "#22c55e",
-                          marginRight: "6px",
-                        }}
-                      >
-                        {ing.name}
-                      </span>
-                    ))}
-                  </div>
+          {recipes.map((recipe) => (
+
+            <div
+              key={recipe.id}
+              onClick={() => openRecipeDetails(recipe.id)}
+              className="bg-white rounded-2xl shadow-sm hover:shadow-md hover:bg-primary/40 glass glass-strong transition cursor-pointer p-4 flex gap-4 items-center"
+            >
+
+              <img
+                src={recipe.image}
+                alt={recipe.title}
+                className="w-24 h-24 rounded-xl object-cover"
+              />
+
+              <div className="flex-1">
+
+                <h3 className="font-semibold">
+                  {recipe.title}
+                </h3>
+
+                <p className="text-xs text-muted-foreground mt-1">
+                  Uses {recipe.usedIngredientCount} of your ingredients
+                </p>
+
+                <div className="flex flex-wrap gap-2 mt-2">
+
+                  {recipe.usedIngredients?.map((ing, index) => (
+
+                    <span
+                      key={index}
+                      className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-600"
+                    >
+                      {ing.name}
+                    </span>
+
+                  ))}
+
                 </div>
 
-                <ChefHat size={22} />
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="empty-state">
-            <ChefHat size={80} />
-            <h3>No recipes found</h3>
-            <p>Add more grocery items to get better suggestions</p>
-          </div>
-        )}
-      </div>
+
+              <ChefHat className="text-primary" size={22} />
+
+            </div>
+
+          ))}
+
+        </div>
+
+      ) : (
+
+        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+
+          <ChefHat size={70} className="opacity-40 mb-6" />
+
+          <h3 className="text-lg font-semibold">
+            No recipes found
+          </h3>
+
+          <p className="text-sm">
+            Add more grocery items to get better suggestions
+          </p>
+
+        </div>
+
+      )}
+
+      {/* MODAL */}
 
       {showModal && (
-        <div
-          className="modern-modal-overlay"
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.65)",
-            backdropFilter: "blur(6px)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            className="modern-modal"
-            style={{
-              width: "75%",
-              maxHeight: "90vh",
-              background: "var(--bg-card)",
-              borderRadius: "20px",
-              padding: "2rem",
-              overflowY: "auto",
-              position: "relative",
-              boxShadow: "0 40px 80px rgba(0,0,0,0.4)",
-            }}
-          >
+
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+
+          <div className="bg-white rounded-2xl w-[800px] max-h-[85vh] overflow-y-auto p-8 relative shadow-xl">
+
             <button
               onClick={() => {
                 setShowModal(false);
                 setSelectedRecipe(null);
               }}
-              style={{
-                position: "absolute",
-                top: "20px",
-                right: "20px",
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-              }}
+              className="absolute top-5 right-5 p-2 hover:scale-[1.15] transition duration-500"
             >
               <X />
             </button>
 
             {detailsLoading ? (
-              <div className="spinner" />
+
+              <div className="flex justify-center py-20">
+                <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent"></div>
+              </div>
+
             ) : (
+
               selectedRecipe && (
-                <>
-                  <h2 style={{ marginBottom: "1rem" }}>
+
+                <div className="space-y-6">
+
+                  <h2 className="text-2xl font-bold">
                     {selectedRecipe.title}
                   </h2>
 
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "2rem",
-                      marginBottom: "1.5rem",
-                      color: "var(--text-secondary)",
-                    }}
-                  >
-                    <div>
-                      <Clock size={16} /> {selectedRecipe.totalTime || "N/A"}{" "}
-                      mins
+                  <div className="flex gap-6 text-sm text-muted-foreground">
+
+                    <div className="flex items-center gap-2">
+                      <Clock size={16} />
+                      {selectedRecipe.totalTime || "N/A"} mins
                     </div>
-                    <div>
-                      <Users size={16} /> {selectedRecipe.servings} servings
+
+                    <div className="flex items-center gap-2">
+                      <Users size={16} />
+                      {selectedRecipe.servings} servings
                     </div>
+
                   </div>
 
-                  <h3>Ingredients</h3>
-                  <ul>
-                    {selectedRecipe.ingredients?.map((ing, index) => (
-                      <li key={index}>{ing.amount}</li>
-                    ))}
-                  </ul>
+                  <div>
 
-                  <h3 style={{ marginTop: "1.5rem" }}>Instructions</h3>
-                  <ol>
-                    {selectedRecipe.instructions?.map((step) => (
-                      <li key={step.number} style={{ marginBottom: "0.75rem" }}>
-                        {step.step}
-                      </li>
-                    ))}
-                  </ol>
-                </>
+                    <h3 className="font-semibold mb-2">
+                      Ingredients
+                    </h3>
+
+                    <ul className="list-disc pl-5 space-y-1 text-sm">
+
+                      {selectedRecipe.ingredients?.map((ing, index) => (
+                        <li key={index}>{ing.amount}</li>
+                      ))}
+
+                    </ul>
+
+                  </div>
+
+                  <div>
+
+                    <h3 className="font-semibold mb-2">
+                      Instructions
+                    </h3>
+
+                    <ol className="list-decimal pl-5 space-y-2 text-sm">
+
+                      {selectedRecipe.instructions?.map((step) => (
+                        <li key={step.number}>{step.step}</li>
+                      ))}
+
+                    </ol>
+
+                  </div>
+
+                </div>
+
               )
+
             )}
+
           </div>
+
         </div>
+
       )}
+
     </div>
   );
 };

@@ -70,6 +70,22 @@ export const authAPI = {
   },
 };
 
+export const usersAPI = {
+  updateUser: async (userId, data) => {
+    const res = await api.put(`${USERS_URL}/${userId}`, data);
+    return res.data;
+  },
+  
+  updatePassword: async (data) => { 
+    const response = await api.put(`${USERS_URL}/password`, data);
+    return response.data;
+  },
+  deleteUser: async (userId) => {
+    const res = await api.delete(`${USERS_URL}/${userId}`);
+    return res.data;
+  },
+};
+
 // Items API
 export const itemsAPI = {
   getAll: async () => {
