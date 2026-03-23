@@ -120,7 +120,7 @@ const Notifications = () => {
               {notifications.map((notification) => (
                 <tr
                   key={notification._id}
-                  className={`shadow-sm text-primary hover:shadow-md hover:text-foreground transition rounded-xl
+                  className={`shadow-sm text-primary hover:shadow-md hover:text-foreground rounded-xl
                   ${notification.isRead ? "bg-white" : "bg-primary/80 glass glass-strong"}`}
                 >
                   <td className="p-4 rounded-l-xl">
