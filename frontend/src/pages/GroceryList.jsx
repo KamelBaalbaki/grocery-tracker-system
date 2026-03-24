@@ -177,7 +177,7 @@ const GroceryList = () => {
               {filteredItems.map((item) => (
                 <tr
                   key={item._id}
-                  className="bg-primary/20 glass glass-strong shadow-sm hover:shadow-md transition rounded-xl text-primary hover:text-foreground hover:bg-primary/20"
+                  className={`${item.status == "Expired" ? "bg-red-500/20 text-red-500 hover:text-red-700" : "bg-primary/20 text-primary"} glass glass-strong shadow-sm hover:shadow-md transition rounded-xl text-primary hover:text-foreground`}
                 >
                   <td className="p-4 font-medium rounded-l-xl">{item.name}</td>
 

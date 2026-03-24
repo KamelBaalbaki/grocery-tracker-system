@@ -98,11 +98,11 @@ const forgotPassword = async (req, res) => {
     const user = await userService.findUserByEmail(email);
 
     if (!user) {
-      return res.json({
-        message: "If that email exists, a reset link was sent",
+      return res.status(404).json({
+        message: "User with this email does not exist",
       });
     }
-
+    
     const resetToken = crypto.randomBytes(32).toString("hex");
 
     const hashedToken = crypto

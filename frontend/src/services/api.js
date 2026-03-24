@@ -65,7 +65,7 @@ export const authAPI = {
   },
 
   resetPassword: async (token, password) => {
-    const response = await api.post(`${AUTH_URL}/password-reset/${token}`, {
+    const response = await api.post(`${AUTH_URL}/reset-password/${token}`, {
       password,
     });
     return response.data;

@@ -30,16 +30,6 @@ const itemSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    reminderDate: {
-        type: Date,
-        required: false,
-        validate: {
-            validator: function(value) {
-                return !value || value < this.expiryDate;
-            },
-            message: 'Reminder date must be before expiry date'
-        }
-    },
     status: {
         type: String,
         enum: ["Active", "Expired"],
