@@ -28,13 +28,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await authAPI.register(userData);
-      const { user, token } = response;
-      
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      setUser(user);
-      
+      await authAPI.register(userData);
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.message || 
