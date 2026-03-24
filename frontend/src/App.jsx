@@ -16,6 +16,8 @@ import Reminders from "./pages/Reminders";
 import Recipes from "./pages/Recipes";
 import EcoInsights from "./pages/EcoInsights";
 import Settings from "./pages/Settings";
+import ForgotPassword from "./pages/ForgotPassword"
+import ResetPassword from "./pages/ResetPassword";
 
 // Protected Route
 const ProtectedRoute = ({ children }) => {
@@ -60,6 +62,20 @@ function App() {
         path="/register"
         element={
           isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />
+        }
+      />
+
+      <Route
+        path="/forgot-password"
+        element={
+          isAuthenticated ? <Navigate to="/dashboard" replace /> : <ForgotPassword />
+        }
+      />
+
+      <Route
+        path="/reset-password/:token"
+        element={
+          isAuthenticated ? <Navigate to="/dashboard" replace /> : <ResetPassword />
         }
       />
 

@@ -5,5 +5,7 @@ const { registerValidationRules, validate } = require("../middleware/userValidat
 
 router.post("/register", registerValidationRules, validate, authController.register);
 router.post("/login", authController.login);
+router.post("/forgot-password", authController.forgotPassword);
+router.post("/password-reset/:token", authController.resetPassword);
 
 module.exports = router;

@@ -44,7 +44,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 // Auth API
@@ -56,6 +56,18 @@ export const authAPI = {
 
   login: async (credentials) => {
     const response = await api.post(`${AUTH_URL}/login`, credentials);
+    return response.data;
+  },
+
+  forgotPassword: async (email) => {
+    const response = await api.post(`${AUTH_URL}/forgot-password`, { email });
+    return response.data;
+  },
+
+  resetPassword: async (token, password) => {
+    const response = await api.post(`${AUTH_URL}/password-reset/${token}`, {
+      password,
+    });
     return response.data;
   },
 
@@ -75,8 +87,8 @@ export const usersAPI = {
     const res = await api.put(`${USERS_URL}/${userId}`, data);
     return res.data;
   },
-  
-  updatePassword: async (data) => { 
+
+  updatePassword: async (data) => {
     const response = await api.put(`${USERS_URL}/password`, data);
     return response.data;
   },
@@ -136,7 +148,6 @@ export const remindersAPI = {
 };
 
 export const notificationsAPI = {
-
   getAll: async () => {
     const response = await api.get(NOTIFICATIONS_URL);
     return response.data;

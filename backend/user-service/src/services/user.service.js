@@ -26,11 +26,37 @@ const updateUser = async (id, data) => {
     data.password = await bcrypt.hash(data.password, 10);
   }
 
-  return await User.findByIdAndUpdate(
-    id,
-    { $set: data },
+  return await User.findByIdAndUpdate(id, { $set: data }, { new: true }).select(
+    "-password",
+  );
+};
+
+const setResetPasswordToken = async (email, hashedToken, expiresAt) => {
+  return await User.findOneAndUpdate(
+    { email },
+    {
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: expiresAt,
+    },
     { new: true },
-  ).select("-password");
+  );
+};
+
+const findUserByResetToken = async (hashedToken) => {
+  return await User.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpires: { $gt: Date.now() },
+  });
+};
+
+const resetUserPassword = async (user, newPassword) => {
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  user.password = hashedPassword;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpires = undefined;
+
+  return await user.save();
 };
 
 const deleteUser = async (id) => {
@@ -47,6 +73,9 @@ module.exports = {
   findUserByEmail,
   getUserById,
   updateUser,
+  setResetPasswordToken,
+  findUserByResetToken,
+  resetUserPassword,
   deleteUser,
   logoutUser,
 };

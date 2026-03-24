@@ -1,29 +1,27 @@
 const bcrypt = require("bcryptjs");
 const userService = require("../services/user.service");
 const generateToken = require("../utils/jwt");
+const crypto = require("crypto");
+const sendEmail = require("../utils/email.service");
+const resetPasswordEmail = require("../templates/resetPasswordEmail");
 
 const register = async (req, res) => {
   try {
-    // First, make sure req.body exists
     if (!req.body) {
       return res.status(400).json({ message: "Request body is required" });
     }
 
-    // Now destructure safely
     const { firstName, lastName, email, password } = req.body;
 
-    // Validate individual fields
     if (!firstName || !lastName || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Check if user exists
     const existingUser = await userService.findUserByEmail(email);
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Create user safely
     const user = await userService.createUser({
       firstName,
       lastName,
@@ -31,7 +29,6 @@ const register = async (req, res) => {
       password,
     });
 
-    // Generate token
     const token = generateToken({
       userId: user._id,
       email: user.email,
@@ -90,7 +87,77 @@ const login = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const user = await userService.findUserByEmail(email);
+
+    if (!user) {
+      return res.json({
+        message: "If that email exists, a reset link was sent",
+      });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(resetToken)
+      .digest("hex");
+
+    await userService.setResetPasswordToken(
+      email,
+      hashedToken,
+      Date.now() + 10 * 60 * 1000,
+    );
+
+    const resetURL = `http://localhost:5173/reset-password/${resetToken}`;
+
+    await sendEmail(
+      user.email,
+      "Reset Your Password",
+      resetPasswordEmail({ resetURL }),
+    );
+
+    res.json({ message: "Reset link sent to your email" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await userService.findUserByResetToken(hashedToken);
+
+    if (!user) {
+      return res.status(400).json({ message: "Token invalid or expired" });
+    }
+
+    await userService.resetUserPassword(user, password);
+
+    res.json({ message: "Password reset successful" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   register,
   login,
+  forgotPassword,
+  resetPassword,
 };

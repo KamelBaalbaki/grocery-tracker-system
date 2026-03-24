@@ -1,38 +1,37 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { Mail, Lock, AlertCircle } from "lucide-react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { authAPI } from "../services/api";
+import { Lock, AlertCircle } from "lucide-react";
 import Navbar from "../layout/Navbar";
 
-const Login = () => {
+const ResetPassword = () => {
+  const { token } = useParams();
   const navigate = useNavigate();
-  const { login } = useAuth();
 
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setError("");
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+
+    setMessage("");
     setError("");
+    setLoading(true);
 
-    const result = await login(formData);
+    try {
+      const res = await authAPI.resetPassword(token, password);
 
-    if (result.success) {
-      navigate("/dashboard");
-    } else {
-      setError(result.error);
+      setMessage(res.message || "Password reset successful");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Something went wrong"
+      );
     }
 
     setLoading(false);
@@ -44,14 +43,22 @@ const Login = () => {
 
       <div className="flex flex-1 items-center justify-center px-6 py-16">
         <div className="w-full max-w-md bg-primary/20 glass glass-strong backdrop-blur-xl border border-border rounded-2xl p-8 shadow-xl">
+
           {/* Title */}
           <h1 className="text-3xl font-bold text-primary text-center mb-2">
-            Welcome Back
+            Reset Password
           </h1>
 
           <p className="text-muted-foreground text-center mb-8">
-            Sign in to continue tracking your groceries
+            Enter your new password
           </p>
+
+          {/* Success Message */}
+          {message && (
+            <div className="flex items-center gap-2 text-green-500 bg-green-500/10 border border-green-400/30 rounded-lg p-3 mb-6 text-sm">
+              {message} — redirecting to login...
+            </div>
+          )}
 
           {/* Error */}
           {error && (
@@ -62,34 +69,11 @@ const Login = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-1">
-                Email Address
-              </label>
-
-              <div className="relative">
-                <Mail
-                  size={18}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10"
-                />
-
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-white/40 backdrop-blur text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                />
-              </div>
-            </div>
 
             {/* Password */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">
-                Password
+                New Password
               </label>
 
               <div className="relative">
@@ -100,10 +84,9 @@ const Login = () => {
 
                 <input
                   type="password"
-                  name="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={handleChange}
+                  placeholder="Enter new password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-white/40 backdrop-blur text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
@@ -119,19 +102,19 @@ const Login = () => {
               {loading ? (
                 <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
               ) : (
-                <>Sign In</>
+                <>Reset Password</>
               )}
             </button>
           </form>
 
           {/* Footer */}
           <div className="text-center mt-6 text-sm text-muted-foreground">
-            Forgot your password?{" "}
+            Remember your password?{" "}
             <Link
-              to="/forgot-password"
+              to="/login"
               className="text-primary font-semibold hover:underline"
             >
-              Click here
+              Back to login
             </Link>
           </div>
         </div>
@@ -140,4 +123,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ResetPassword;
