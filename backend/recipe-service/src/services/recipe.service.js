@@ -8,7 +8,7 @@ const findByIngredients = async (items, limit = 5) => {
     params: {
       ingredients,
       number: limit,
-      ranking: 2,
+      ranking: 1,
       ignorePantry: true
     }
   });
