@@ -86,7 +86,7 @@ const Notifications = () => {
       </button>
 
       <button
-        className="absolute bottom-0 right-6 flex items-center rounded-full p-2 text-primary hover:scale-[1.15] hover:bg-primary/30 hover:border hover:border-primary hover:text-red-500 transition duration-500"
+        className="absolute bottom-0 right-6 flex items-center rounded-full p-2 text-primary hover:scale-[1.15] hover:bg-primary/30 hover:border hover:border-primary hover:text-white transition duration-500"
         onClick={deleteAllNotifications}
         title="Delete All Notifications"
       >
