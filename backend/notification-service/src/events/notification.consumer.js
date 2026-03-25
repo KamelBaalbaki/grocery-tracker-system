@@ -68,6 +68,7 @@ const startConsumer = async () => {
                 },
               ),
             });
+            
             await sendEmail(data.email, emailSubject, emailHtml);
             break;
 
@@ -84,6 +85,7 @@ const startConsumer = async () => {
               itemName: data.itemName,
               reminderDate: data.reminderDate,
             });
+
             await sendEmail(data.email, emailSubject, emailHtml);
             break;
 
@@ -100,7 +102,8 @@ const startConsumer = async () => {
               itemName: data.itemName,
               expiredAt: data.expiredAt,
             });
-            await sendEmail(data.email, emailSubject, emailHtml);
+
+            await sendEmail(data.email, emailSubject, emailHtml);       
             break;
 
           default:
