@@ -68,7 +68,12 @@ const startConsumer = async () => {
                 },
               ),
             });
+
+            try{
             await sendEmail(data.email, emailSubject, emailHtml);
+            } catch (error){
+              console.error("Reminder SET email error: ", error)
+            }
             break;
 
           case "reminder.due":
@@ -84,7 +89,11 @@ const startConsumer = async () => {
               itemName: data.itemName,
               reminderDate: data.reminderDate,
             });
+            try{
             await sendEmail(data.email, emailSubject, emailHtml);
+            } catch (error){
+              console.error("Reminder DUE email error: ", error)
+            }
             break;
 
           case "item.expired":
@@ -100,7 +109,11 @@ const startConsumer = async () => {
               itemName: data.itemName,
               expiredAt: data.expiredAt,
             });
+            try{
             await sendEmail(data.email, emailSubject, emailHtml);
+            } catch (error){
+              console.error("Item expired email error: ", error)
+            }            
             break;
 
           default:
