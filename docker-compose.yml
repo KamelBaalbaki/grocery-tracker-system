@@ -1,14 +1,15 @@
 services:
   api-gateway:
-      build: ./backend/api-gateway
-      ports:
-        - "4000:4000"
-      env_file:
-        - ./backend/api-gateway/.env
-      volumes:
-        - ./backend/api-gateway:/app
-      command: npm run dev
-      depends_on:
+    container_name: api-gateway
+    build: ./backend/api-gateway
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./backend/api-gateway/.env
+    volumes:
+      - ./backend/api-gateway:/app
+    command: npm run dev
+    depends_on:
       - user-service
       - item-service
       - reminder-service
@@ -16,6 +17,7 @@ services:
       - recipe-service
 
   user-service:
+    container_name: user-service
     build: ./backend/user-service
     ports:
       - "4001:4001"
@@ -26,6 +28,7 @@ services:
     command: npm run dev
 
   item-service:
+    container_name: item-service
     build: ./backend/item-service
     ports:
       - "4002:4002"
@@ -36,28 +39,32 @@ services:
     command: npm run dev
 
   item-service-worker:
+    container_name: item-service-worker
     build: ./backend/item-service
     volumes:
       - ./backend/item-service:/app
     command: node src/worker.js
 
   reminder-service:
-      build: ./backend/reminder-service
-      ports:
-        - "4003:4003"
-      env_file:
-        - ./backend/reminder-service/.env
-      volumes:
-        - ./backend/reminder-service:/app
-      command: npm run dev
+    container_name: reminder-service
+    build: ./backend/reminder-service
+    ports:
+      - "4003:4003"
+    env_file:
+      - ./backend/reminder-service/.env
+    volumes:
+      - ./backend/reminder-service:/app
+    command: npm run dev
 
   reminder-service-worker:
+    container_name: reminder-service-worker
     build: ./backend/reminder-service
     volumes:
       - ./backend/reminder-service:/app
     command: node src/worker.js
 
   notification-service:
+    container_name: notification-service
     build: ./backend/notification-service
     ports:
       - "4004:4004"
@@ -68,6 +75,7 @@ services:
     command: npm run dev
 
   recipe-service:
+    container_name: recipe-service
     build: ./backend/recipe-service
     ports:
       - "4005:4005"
@@ -78,6 +86,7 @@ services:
     command: npm run dev
 
   react-app:
+    container_name: react-app
     build: ./frontend
     ports:
       - "5173:5173"
