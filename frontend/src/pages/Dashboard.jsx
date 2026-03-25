@@ -14,6 +14,7 @@ import {
   BarChart3,
   Clock,
   Search,
+  ChefHat
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -28,8 +29,7 @@ const Dashboard = () => {
     savedThisMonth: 0,
   });
 
-  // 🔥 MODAL STATE
-  const [showModal, setShowModal] = useState(false);
+  const [showRecipeModal, setShowRecipeModal] = useState(false);
   const [recipes, setRecipes] = useState([]);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
@@ -93,13 +93,13 @@ const Dashboard = () => {
 
   const expiringItems = getExpiringItems();
 
-  // 🔥 OPEN RECIPES
-  const openItemRecipes = async (itemName) => {
+  // Open Recipe Modal
+  const openRecipeModal = async (itemName) => {
     try {
-      setShowModal(true);
+      setShowRecipeModal(true);
       setDetailsLoading(true);
       setSelectedRecipe(null);
-
+      console.log("Sending ingredient:", itemName);
       const results = await recipesAPI.getSuggestions([itemName], 6);
       setRecipes(results);
     } catch (error) {
@@ -109,7 +109,7 @@ const Dashboard = () => {
     }
   };
 
-  // 🔥 OPEN RECIPE DETAILS
+  // Open Recipe Details
   const openRecipeDetails = async (recipeId) => {
     try {
       setDetailsLoading(true);
@@ -121,6 +121,7 @@ const Dashboard = () => {
       setDetailsLoading(false);
     }
   };
+
 
   if (loading)
     return (
@@ -241,7 +242,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* EXPIRING ITEMS */}
+      {/* Expiring Item */}
       <div className="bg-white/30 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-sm">
         <div className="flex items-center gap-2 font-semibold mb-4">
           <AlertTriangle size={18} />
@@ -264,7 +265,7 @@ const Dashboard = () => {
                 </div>
 
                 <button
-                  onClick={() => openItemRecipes(item.name)}
+                  onClick={() => openRecipeModal(item.name)}
                   className="text-sm px-3 py-2 rounded-lg 
                   bg-primary border text-white btn 
                   hover:bg-primary/20 hover:text-primary hover:border-primary transition"
@@ -279,13 +280,14 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* MODAL */}
-      {showModal && (
+      {/* Recipe Modal */}
+      {showRecipeModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl w-[800px] max-h-[85vh] overflow-y-auto p-8 relative shadow-xl">
+
             <button
               onClick={() => {
-                setShowModal(false);
+                setShowRecipeModal(false);
                 setRecipes([]);
                 setSelectedRecipe(null);
               }}
@@ -299,23 +301,34 @@ const Dashboard = () => {
                 <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full"></div>
               </div>
             ) : selectedRecipe ? (
+
               <div className="space-y-6">
-                <h2 className="text-2xl text-primary font-bold">{selectedRecipe.title}</h2>
+                <h2 className="text-2xl text-primary font-bold">
+                  {selectedRecipe.title}
+                </h2>
 
                 <div>
-                  <h3 className="font-semibold text-primary mb-2">Ingredients</h3>
+                  <h3 className="font-semibold text-primary mb-2">
+                    Ingredients
+                  </h3>
                   <ul className="list-disc pl-5 text-sm">
                     {selectedRecipe.ingredients?.map((ing, i) => (
-                      <li key={i} className="text-muted-foreground">{ing.amount}</li>
+                      <li key={i} className="text-muted-foreground">
+                        {ing.amount}
+                      </li>
                     ))}
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-primary mb-2">Instructions</h3>
+                  <h3 className="font-semibold text-primary mb-2">
+                    Instructions
+                  </h3>
                   <ol className="list-decimal pl-5 text-sm space-y-2">
                     {selectedRecipe.instructions?.map((step) => (
-                      <li key={step.number} className="text-muted-foreground">{step.step}</li>
+                      <li key={step.number} className="text-muted-foreground">
+                        {step.step}
+                      </li>
                     ))}
                   </ol>
                 </div>
@@ -327,20 +340,52 @@ const Dashboard = () => {
                   <h2 className="text-xl font-semibold">Recipes</h2>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-4">
-                  {recipes.map((recipe) => (
-                    <div
-                      key={recipe.id}
-                      onClick={() => openRecipeDetails(recipe.id)}
-                      className="bg-primary/10 glass glass-strong rounded-xl p-4 cursor-pointer hover:bg-primary/40 hover:shadow-lg transition"
-                    >
-                      <p className="font-medium">{recipe.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Uses {recipe.usedIngredientCount} ingredients
-                      </p>
-                    </div>
-                  ))}
-                </div>
+                {recipes.length === 0 ? (
+                  <div className="text-center py-16 text-muted-foreground">
+                    <p className="text-lg font-medium">No recipes found</p>
+                    <p className="text-sm mt-1">
+                      Try another ingredient or check your connection
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {recipes.map((recipe) => (
+                      <div
+                        key={recipe.id}
+                        onClick={() => openRecipeDetails(recipe.id)}
+                        className="bg-white rounded-2xl shadow-sm hover:shadow-md hover:bg-primary/40 glass glass-strong transition cursor-pointer p-4 flex gap-4 items-center"
+                      >
+                        <img
+                          src={recipe.image}
+                          alt={recipe.title}
+                          className="w-24 h-24 rounded-xl object-cover"
+                        />
+
+                        <div className="flex-1">
+                          <h3 className="font-semibold">{recipe.title}</h3>
+
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Uses {recipe.usedIngredientCount} of your
+                            ingredients
+                          </p>
+
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {recipe.usedIngredients?.map((ing, index) => (
+                              <span
+                                key={index}
+                                className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-600"
+                              >
+                                {ing.name}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <ChefHat className="text-primary" size={22} />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

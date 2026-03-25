@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { itemsAPI, remindersAPI } from "../services/api";
-import { Search, Plus, Trash2, Clock, Edit2 } from "lucide-react";
+import { itemsAPI, remindersAPI, recipesAPI } from "../services/api";
+import { Search, ChefHat, Plus, Trash2, Clock, Edit2 } from "lucide-react";
 
 const GroceryList = () => {
   const { user } = useAuth();
@@ -20,6 +20,11 @@ const GroceryList = () => {
   const [reminderDate, setReminderDate] = useState("");
   const [reminderMessage, setReminderMessage] = useState("");
   const [selectedItem, setSelectedItem] = useState(null);
+
+  const [showRecipeModal, setShowRecipeModal] = useState(false);
+  const [recipes, setRecipes] = useState([]);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
   useEffect(() => {
     fetchItems();
@@ -103,6 +108,33 @@ const GroceryList = () => {
       setShowReminderModal(false);
     } catch (error) {
       console.error("Failed to create reminder:", error);
+    }
+  };
+
+  const openRecipeModal = async (itemName) => {
+    try {
+      setShowRecipeModal(true);
+      setDetailsLoading(true);
+      setSelectedRecipe(null);
+      console.log("Sending ingredient:", itemName);
+      const results = await recipesAPI.getSuggestions([itemName], 6);
+      setRecipes(results);
+    } catch (error) {
+      console.error("Failed to fetch recipes:", error);
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
+  const openRecipeDetails = async (recipeId) => {
+    try {
+      setDetailsLoading(true);
+      const details = await recipesAPI.getById(recipeId);
+      setSelectedRecipe(details);
+    } catch (error) {
+      console.error("Failed to fetch recipe details:", error);
+    } finally {
+      setDetailsLoading(false);
     }
   };
 
@@ -209,6 +241,13 @@ const GroceryList = () => {
                       </button>
 
                       <button
+                        onClick={() => openRecipeModal(item.name)}
+                        className="p-2 hover:scale-[1.15] transition-transofrm duration-500"
+                      >
+                        <ChefHat size={16} />
+                      </button>
+
+                      <button
                         onClick={() => openDeleteModal(item)}
                         className="p-2 hover:scale-[1.15] transition-transofrm duration-500"
                       >
@@ -287,6 +326,122 @@ const GroceryList = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* RECIPE MODAL */}
+      {showRecipeModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl w-[800px] max-h-[85vh] overflow-y-auto p-8 relative shadow-xl">
+          
+            <button
+              onClick={() => {
+                setShowRecipeModal(false);
+                setRecipes([]);
+                setSelectedRecipe(null);
+              }}
+              className="absolute top-5 right-5 p-2 hover:scale-[1.1]"
+            >
+              ✕
+            </button>
+
+    
+            {detailsLoading ? (
+              <div className="flex justify-center py-20">
+                <div className="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full"></div>
+              </div>
+            ) : selectedRecipe ? (
+          
+              <div className="space-y-6">
+                <h2 className="text-2xl text-primary font-bold">
+                  {selectedRecipe.title}
+                </h2>
+
+                <div>
+                  <h3 className="font-semibold text-primary mb-2">
+                    Ingredients
+                  </h3>
+                  <ul className="list-disc pl-5 text-sm">
+                    {selectedRecipe.ingredients?.map((ing, i) => (
+                      <li key={i} className="text-muted-foreground">
+                        {ing.amount}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-primary mb-2">
+                    Instructions
+                  </h3>
+                  <ol className="list-decimal pl-5 text-sm space-y-2">
+                    {selectedRecipe.instructions?.map((step) => (
+                      <li key={step.number} className="text-muted-foreground">
+                        {step.step}
+                      </li>
+                    ))}
+                  </ol>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Search size={24} />
+                  <h2 className="text-xl font-semibold">Recipes</h2>
+                </div>
+
+                {recipes.length === 0 ? (
+                  <div className="text-center py-16 text-muted-foreground">
+                    <p className="text-lg font-medium">No recipes found</p>
+                    <p className="text-sm mt-1">
+                      Try another ingredient or check your connection
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {recipes.map((recipe) => (
+                      <div
+                        key={recipe.id}
+                        onClick={() => openRecipeDetails(recipe.id)}
+                        className="bg-white rounded-2xl shadow-sm hover:shadow-md hover:bg-primary/40 glass glass-strong transition cursor-pointer p-4 flex gap-4 items-center"
+                      >
+                  
+                        <img
+                          src={recipe.image}
+                          alt={recipe.title}
+                          className="w-24 h-24 rounded-xl object-cover"
+                        />
+
+                  
+                        <div className="flex-1">
+                          <h3 className="font-semibold">{recipe.title}</h3>
+
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Uses {recipe.usedIngredientCount} of your
+                            ingredients
+                          </p>
+
+              
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {recipe.usedIngredients?.map((ing, index) => (
+                              <span
+                                key={index}
+                                className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-600"
+                              >
+                                {ing.name}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        <ChefHat className="text-primary" size={22} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
