@@ -52,7 +52,6 @@ const changePassword = async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ message: "Old password is incorrect" });
 
-    // Password rules
     if (newPassword.length < 8) {
       return res.status(400).json({ message: "Password must be at least 8 characters" });
     }
@@ -96,13 +95,8 @@ const deleteUser = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
-    // For stateless JWT, just return message
     const result = await userService.logoutUser();
     res.json(result);
-
-    // OPTIONAL: If using cookies:
-    // res.cookie("token", "", { httpOnly: true, expires: new Date(0) });
-    // res.json({ message: "Logged out successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

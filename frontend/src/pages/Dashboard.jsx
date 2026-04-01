@@ -14,6 +14,7 @@ import {
   BarChart3,
   Clock,
   Search,
+  ChefHat,
 } from "lucide-react";
 
 const Dashboard = () => {
@@ -52,7 +53,10 @@ const Dashboard = () => {
 
   const calculateStats = (itemsData) => {
     const now = new Date();
+
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     const sortedByExpiry = [...itemsData]
       .filter((item) => new Date(item.expiryDate) > now)
@@ -62,10 +66,17 @@ const Dashboard = () => {
       (item) => new Date(item.createdAt) > oneWeekAgo,
     ).length;
 
+    const savedThisMonth = itemsData.filter((item) => {
+      const created = new Date(item.createdAt);
+      const expiry = new Date(item.expiryDate);
+
+      return created >= startOfMonth && expiry >= now;
+    }).length;
+
     setStats({
       nextExpiring: sortedByExpiry[0] || null,
       recentlyAdded,
-      savedThisMonth: 7,
+      savedThisMonth,
     });
   };
 
@@ -124,7 +135,7 @@ const Dashboard = () => {
 
   if (loading)
     return (
-       <div className="flex justify-center items-center h-[50vh]">
+      <div className="flex justify-center items-center h-[50vh]">
         <div className="animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent"></div>
       </div>
     );
@@ -300,22 +311,32 @@ const Dashboard = () => {
               </div>
             ) : selectedRecipe ? (
               <div className="space-y-6">
-                <h2 className="text-2xl text-primary font-bold">{selectedRecipe.title}</h2>
+                <h2 className="text-2xl text-primary font-bold">
+                  {selectedRecipe.title}
+                </h2>
 
                 <div>
-                  <h3 className="font-semibold text-primary mb-2">Ingredients</h3>
+                  <h3 className="font-semibold text-primary mb-2">
+                    Ingredients
+                  </h3>
                   <ul className="list-disc pl-5 text-sm">
                     {selectedRecipe.ingredients?.map((ing, i) => (
-                      <li key={i} className="text-muted-foreground">{ing.amount}</li>
+                      <li key={i} className="text-muted-foreground">
+                        {ing.amount}
+                      </li>
                     ))}
                   </ul>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-primary mb-2">Instructions</h3>
+                  <h3 className="font-semibold text-primary mb-2">
+                    Instructions
+                  </h3>
                   <ol className="list-decimal pl-5 text-sm space-y-2">
                     {selectedRecipe.instructions?.map((step) => (
-                      <li key={step.number} className="text-muted-foreground">{step.step}</li>
+                      <li key={step.number} className="text-muted-foreground">
+                        {step.step}
+                      </li>
                     ))}
                   </ol>
                 </div>
@@ -327,17 +348,39 @@ const Dashboard = () => {
                   <h2 className="text-xl font-semibold">Recipes</h2>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-2 gap-6">
                   {recipes.map((recipe) => (
                     <div
                       key={recipe.id}
                       onClick={() => openRecipeDetails(recipe.id)}
-                      className="bg-primary/10 glass glass-strong rounded-xl p-4 cursor-pointer hover:bg-primary/40 hover:shadow-lg transition"
+                      className="bg-white rounded-2xl shadow-sm hover:shadow-md hover:bg-primary/40 glass glass-strong transition cursor-pointer p-4 flex gap-4 items-center"
                     >
-                      <p className="font-medium">{recipe.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Uses {recipe.usedIngredientCount} ingredients
-                      </p>
+                      <img
+                        src={recipe.image}
+                        alt={recipe.title}
+                        className="w-24 h-24 rounded-xl object-cover"
+                      />
+
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{recipe.title}</h3>
+
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Uses {recipe.name} of your ingredients
+                        </p>
+
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {recipe.usedIngredients?.map((ing, index) => (
+                            <span
+                              key={index}
+                              className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-600"
+                            >
+                              {ing.name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      <ChefHat className="text-primary" size={22} />
                     </div>
                   ))}
                 </div>

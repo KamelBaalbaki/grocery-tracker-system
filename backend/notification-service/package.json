@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-   "scripts": {
+  "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "test": "jest"
@@ -19,7 +19,8 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.4",
     "nodemailer": "^8.0.2",
-    "redis": "^5.10.0"
+    "redis": "^5.10.0",
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
     "jest": "^30.3.0",

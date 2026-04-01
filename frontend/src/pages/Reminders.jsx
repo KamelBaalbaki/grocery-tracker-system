@@ -22,7 +22,7 @@ const Reminders = () => {
       const data = await remindersAPI.getAll();
 
       const sorted = data.sort(
-        (a, b) => new Date(a.reminderDate) - new Date(b.reminderDate),
+        (b, a) => new Date(b.reminderDate) - new Date(a.reminderDate),
       );
 
       setReminders(sorted);

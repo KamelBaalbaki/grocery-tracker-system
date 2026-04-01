@@ -8,14 +8,18 @@ import {
   TrendingUp,
   Award,
   Target,
+  AlertTriangle,
 } from "lucide-react";
 
 const EcoInsights = () => {
   const [stats, setStats] = useState({
     totalItemsAdded: 0,
     totalItemsSaved: 0,
+    totalItemsWasted: 0,
     totalMoneySaved: 0,
+    totalMoneyWasted: 0,
   });
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,22 +29,36 @@ const EcoInsights = () => {
   const fetchStats = async () => {
     try {
       const items = await itemsAPI.getAll();
-
-      const totalItemsAdded = items.length;
       const now = new Date();
 
-      const itemsNotExpired = items.filter(
+      const validItems = items.filter(
         (item) => new Date(item.expiryDate) >= now,
-      ).length;
+      );
 
-      const totalMoneySaved = items
-        .filter((item) => new Date(item.expiryDate) >= now)
-        .reduce((sum, item) => sum + (item.price || 0), 0);
+      const expiredItems = items.filter(
+        (item) => new Date(item.expiryDate) < now,
+      );
+
+      const totalItemsAdded = items.length;
+      const totalItemsSaved = validItems.length;
+      const totalItemsWasted = expiredItems.length;
+
+      const totalMoneySaved = validItems.reduce(
+        (sum, item) => sum + (item.price || 0),
+        0,
+      );
+
+      const totalMoneyWasted = expiredItems.reduce(
+        (sum, item) => sum + (item.price || 0),
+        0,
+      );
 
       setStats({
         totalItemsAdded,
-        totalItemsSaved: Math.floor(itemsNotExpired * 0.6),
+        totalItemsSaved,
+        totalItemsWasted,
         totalMoneySaved: totalMoneySaved.toFixed(2),
+        totalMoneyWasted: totalMoneyWasted.toFixed(2),
       });
     } catch (error) {
       console.error("Failed to fetch stats:", error);
@@ -53,12 +71,12 @@ const EcoInsights = () => {
     {
       icon: Wind,
       label: "CO₂ Prevented",
-      value: `${(stats.totalItemsSaved * 2.5).toFixed(1)} kg`,
+      value: `${(stats.totalItemsSaved * 1.25).toFixed(1)} kg`,
     },
     {
       icon: Droplets,
       label: "Water Saved",
-      value: `${(stats.totalItemsSaved * 100).toFixed(0)} L`,
+      value: `${(stats.totalItemsSaved * 130).toFixed(0)} L`,
     },
     {
       icon: Leaf,
@@ -77,16 +95,14 @@ const EcoInsights = () => {
 
   return (
     <div className="space-y-8">
-      {/* HEADER */}
       <div>
         <h1 className="text-3xl font-bold text-gradient">Eco Insights</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Track your environmental impact
+          Track your real environmental and financial impact
         </p>
       </div>
 
-      {/* MAIN STATS */}
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-3 rounded-xl bg-primary/10 text-primary">
@@ -104,7 +120,7 @@ const EcoInsights = () => {
 
         <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-primary/10 text-green-600">
+            <div className="p-3 rounded-xl bg-green-100 text-green-600">
               <Award size={20} />
             </div>
             <span className="text-sm text-muted-foreground">Items Saved</span>
@@ -113,27 +129,45 @@ const EcoInsights = () => {
           <div className="text-2xl font-bold">{stats.totalItemsSaved}</div>
 
           <p className="text-xs text-muted-foreground mt-1">
-            From going to waste
+            Still usable (not expired)
           </p>
         </div>
 
         <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-primary/10 text-green-600">
+            <div className="p-3 rounded-xl bg-green-100 text-green-600">
               <TrendingUp size={20} />
             </div>
             <span className="text-sm text-muted-foreground">Money Saved</span>
           </div>
 
-          <div className="text-2xl font-bold">${stats.totalMoneySaved}</div>
+          <div className="text-2xl font-bold text-green-600">
+            ${stats.totalMoneySaved}
+          </div>
 
           <p className="text-xs text-muted-foreground mt-1">
-            In prevented waste
+            Value of non-expired items
+          </p>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 rounded-xl bg-red-100 text-red-600">
+              <AlertTriangle size={20} />
+            </div>
+            <span className="text-sm text-muted-foreground">Money Wasted</span>
+          </div>
+
+          <div className="text-2xl font-bold text-red-600">
+            ${stats.totalMoneyWasted}
+          </div>
+
+          <p className="text-xs text-muted-foreground mt-1">
+            Lost from expired items
           </p>
         </div>
       </div>
 
-      {/* ENVIRONMENTAL IMPACT */}
       <div className="bg-white rounded-2xl p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-6">
           <Leaf className="text-green-600" size={20} />
@@ -156,7 +190,6 @@ const EcoInsights = () => {
         </div>
       </div>
 
-      {/* TIPS */}
       <div className="bg-white rounded-2xl p-6 shadow-sm">
         <div className="flex items-center gap-2 mb-6">
           <Lightbulb className="text-green-600" size={20} />

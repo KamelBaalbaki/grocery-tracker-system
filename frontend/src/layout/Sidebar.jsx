@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 const Sidebar = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, hasNewNotification } = useAuth();
   const navigate = useNavigate();
 
   const navItems = [
@@ -33,13 +33,8 @@ const Sidebar = () => {
     navigate("/login");
   };
 
-  const initials = user
-    ? `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`
-    : "U";
-
   return (
     <aside className="fixed left-0 top-0 bg-brand h-screen w-64 text-white flex flex-col glow-border glass">
-
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-6 background-gradient rounded-b-xl">
         <Leaf size={28} className="text-white" />
@@ -48,9 +43,9 @@ const Sidebar = () => {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-6">
-        <ul className="space-y-2">
+        <ul className="space-y-2 relative">
           {navItems.map((item) => (
-            <li key={item.to}>
+            <li key={item.to} className="relative">
               <NavLink
                 to={item.to}
                 className={({ isActive }) =>
@@ -63,7 +58,17 @@ const Sidebar = () => {
                 }
               >
                 <item.icon size={20} />
-                {item.label}
+                <span className="relative">{item.label}</span>
+
+                {item.label === "Notifications" && (
+                  <span
+                    className={`
+                      absolute top-3 left-7 h-2 w-2 rounded-full bg-red-600
+                      transform transition-all duration-500
+                      ${hasNewNotification ? "opacity-100 scale-100" : "opacity-0 scale-50"}
+                    `}
+                  ></span>
+                )}
               </NavLink>
             </li>
           ))}
@@ -79,7 +84,6 @@ const Sidebar = () => {
           <LogOut size={18} />
           Logout
         </button>
-
       </div>
     </aside>
   );

@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { notificationsAPI } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import { Bell, CheckCircle, Trash2, CheckCheck } from "lucide-react";
 
 const Notifications = () => {
+  const { setHasNewNotification } = useAuth();
+
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -10,15 +13,22 @@ const Notifications = () => {
     fetchNotifications();
   }, []);
 
+  const updateUnreadState = (list) => {
+    const hasUnread = list.some((n) => !n.isRead);
+    setHasNewNotification(hasUnread);
+  };
+
   const fetchNotifications = async () => {
     try {
       const data = await notificationsAPI.getAll();
 
       const sorted = data.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
 
       setNotifications(sorted);
+
+      updateUnreadState(sorted);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
     } finally {
@@ -30,9 +40,14 @@ const Notifications = () => {
     try {
       await notificationsAPI.markAsRead(id);
 
-      setNotifications((prev) =>
-        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n)),
+      const updated = notifications.map((n) =>
+        n._id === id ? { ...n, isRead: true } : n
       );
+
+      setNotifications(updated);
+
+      // 🔥 update red dot
+      updateUnreadState(updated);
     } catch (error) {
       console.error("Failed to mark as read:", error);
     }
@@ -41,7 +56,16 @@ const Notifications = () => {
   const markAllAsRead = async () => {
     try {
       await notificationsAPI.markAllAsRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+
+      const updated = notifications.map((n) => ({
+        ...n,
+        isRead: true,
+      }));
+
+      setNotifications(updated);
+
+      // 🔥 no unread anymore
+      setHasNewNotification(false);
     } catch (error) {
       console.error("Failed to mark all as read:", error);
     }
@@ -50,7 +74,13 @@ const Notifications = () => {
   const deleteNotification = async (id) => {
     try {
       await notificationsAPI.delete(id);
-      setNotifications((prev) => prev.filter((n) => n._id !== id));
+
+      const updated = notifications.filter((n) => n._id !== id);
+
+      setNotifications(updated);
+
+      // 🔥 update red dot
+      updateUnreadState(updated);
     } catch (error) {
       console.error("Failed to delete notification:", error);
     }
@@ -59,7 +89,11 @@ const Notifications = () => {
   const deleteAllNotifications = async () => {
     try {
       await notificationsAPI.deleteAll();
+
       setNotifications([]);
+
+      // 🔥 nothing left → no dot
+      setHasNewNotification(false);
     } catch (error) {
       console.error("Failed to delete all notifications:", error);
     }
@@ -77,6 +111,7 @@ const Notifications = () => {
 
   return (
     <div className="space-y-8">
+      {/* Mark All Read */}
       <button
         className="absolute bottom-14 right-6 flex items-center rounded-full p-2 text-primary hover:scale-[1.15] hover:bg-primary/30 hover:border hover:border-primary hover:text-white transition duration-500"
         onClick={markAllAsRead}
@@ -85,6 +120,7 @@ const Notifications = () => {
         <CheckCheck size={28} />
       </button>
 
+      {/* Delete All */}
       <button
         className="absolute bottom-0 right-6 flex items-center rounded-full p-2 text-primary hover:scale-[1.15] hover:bg-primary/30 hover:border hover:border-primary hover:text-white transition duration-500"
         onClick={deleteAllNotifications}
@@ -95,7 +131,9 @@ const Notifications = () => {
 
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gradient">Notifications</h1>
+          <h1 className="text-3xl font-bold text-gradient">
+            Notifications
+          </h1>
 
           <p className="text-muted-foreground text-sm mt-1">
             {notifications.length} notifications
@@ -107,7 +145,7 @@ const Notifications = () => {
         <div className="overflow-x-auto">
           <table className="w-full table-fixed text-sm border-separate border-spacing-y-3">
             <thead>
-              <tr className="text-left table-fixed text-muted-foreground text-xs uppercase tracking-wide">
+              <tr className="text-left text-muted-foreground text-xs uppercase tracking-wide">
                 <th className="pl-4">Status</th>
                 <th>Title</th>
                 <th>Message</th>
@@ -121,7 +159,11 @@ const Notifications = () => {
                 <tr
                   key={notification._id}
                   className={`shadow-sm text-primary hover:shadow-md hover:text-foreground rounded-xl
-                  ${notification.isRead ? "bg-white" : "bg-primary/80 glass glass-strong"}`}
+                  ${
+                    notification.isRead
+                      ? "bg-white"
+                      : "bg-primary/80 glass glass-strong"
+                  }`}
                 >
                   <td className="p-4 rounded-l-xl">
                     {notification.isRead ? (
@@ -131,14 +173,18 @@ const Notifications = () => {
                     )}
                   </td>
 
-                  <td className="font-medium">{notification.title}</td>
+                  <td className="font-medium">
+                    {notification.title}
+                  </td>
 
                   <td className="text-muted-foreground">
                     {notification.message}
 
                     {notification.reminderDate && (
                       <div className="text-xs text-primary mt-1">
-                        {new Date(notification.reminderDate).toLocaleString()}
+                        {new Date(
+                          notification.reminderDate
+                        ).toLocaleString()}
                       </div>
                     )}
                   </td>
@@ -151,16 +197,20 @@ const Notifications = () => {
                     <div className="flex justify-end gap-2">
                       {!notification.isRead && (
                         <button
-                          onClick={() => markAsRead(notification._id)}
-                          className="p-2 hover:scale-[1.15] transition-transofrm duration-500"
+                          onClick={() =>
+                            markAsRead(notification._id)
+                          }
+                          className="p-2 hover:scale-[1.15] transition duration-500"
                         >
                           <CheckCircle size={16} />
                         </button>
                       )}
 
                       <button
-                        onClick={() => deleteNotification(notification._id)}
-                        className="p-2 hover:scale-[1.15] transition-transofrm duration-500"
+                        onClick={() =>
+                          deleteNotification(notification._id)
+                        }
+                        className="p-2 hover:scale-[1.15] transition duration-500"
                       >
                         <Trash2 size={16} />
                       </button>
@@ -174,7 +224,9 @@ const Notifications = () => {
       ) : (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <Bell size={70} className="opacity-40 mb-6" />
-          <h3 className="text-lg font-semibold">No notifications</h3>
+          <h3 className="text-lg font-semibold">
+            No notifications
+          </h3>
           <p className="text-sm">You're all caught up</p>
         </div>
       )}
