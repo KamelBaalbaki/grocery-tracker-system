@@ -24,8 +24,15 @@ The Grocery Tracker application provides the following key features:
 - Expiration Alerts: Monitor expiry dates to prevent food waste.
 - Quantity Management: Keep track of remaining stock to avoid over-purchasing.
 
-### Notifications 
+### Notifications & Reminders
 - Email Alerts: Receive notifications for low stock or expiring items (via nodemailer).
+
+### Recipe Suggestions 
+- Recipe API: Suggests a list of recipes based on the current inventory stock.
+
+### Eco Insights
+- Summary: Tracks user progress on food and money saved, wasted, etc., and suggested tips.
+
 
 ### Full-Stack Architecture
 - Frontend: Built with React for responsive user interface and real-time updates.
@@ -71,7 +78,7 @@ This project was built using a full-stack JavaScript architecture and the follow
 * __cors__ – Cross-origin request handling
 * __nodemailer__ - Email notifications
 > [!IMPORTANT]
-> _*This project uses a .env file to store sensitive configuration values such as API keys, authentication secrets, and service credentials. For security and privacy reasons, the `.env` file is not included in the GitHub repository and is listed in `.gitignore`._
+> For security and privacy reasons, the `.env` file is not included in the GitHub repository and is listed in `.gitignore`.
 
 # Setup Installation
 ## 1. Clone Repository
@@ -81,33 +88,47 @@ git clone https://github.com/KamelBaalbaki/grocery-tracker-system
 Enter the project folder.
 
 ## 2. Install Dependencies
-Each service (e.g., `user-service`, `notification-service`, frontend) has its own dependencies (`node_modules`). Navigate to each folder and run:
-```
-npm install
-```
+Each service (e.g., `user-service`, `notification-service`, frontend) has its own dependencies (`node_modules`). Navigate to each folder and install:
+
+| Service | Install Command |
+|---|---|
+| `api-gateway` | `npm install cors dotenv express http-proxy-middleware jsonwebtoken` |
+| `item-service` | `npm install cors dotenv express jsonwebtoken mongoose redis` |
+| `notification-service` | `npm install cors dotenv express jsonwebtoken mongoose nodemailer redis socket.io` |
+| `recipe-service` | `npm install axios cors dotenv express jsonwebtoken` |
+| `reminder-service` | `npm install agenda cors dotenv express jsonwebtoken mongoose redis` |
+| `user-service` | `npm install bcryptjs cors dotenv express express-validator jsonwebtoken mongoose nodemailer` |
+
 > [!TIP]
-> You may check errors when running each service to find any missing dependencies, then install those dependencies
+> You may check the `package.json` file to find the necessary dependencies for each micro-service.
 
 ## 3. Create Environment Variables
-Create a `.env` file in each service that requires it and add the necessary keys. Example:
-```
-# user-service/.env
-PORT=5000
-MONGO_URI=mongodb://localhost:27017/grocery-tracker
-JWT_SECRET=your_jwt_secret
-```
-```
-# notification-service/.env
-PORT=6000
-EMAIL_USER=your_email@example.com
-EMAIL_PASS=your_email_password
-```
-Repeat for all services.
+Each service contains a `.env.example` file. Rename each one to `.env` and fill in your respective sensitive configuration.
+
+| Service | Key Variables |
+|---|---|
+| `api-gateway` | `JWT_SECRET` |
+| `item-service` | `MONGO_URI`, `JWT_SECRET` |
+| `notification-service` | `MONGO_URI`, `GMAIL_EMAIL`, `GMAIL_PASSWORD`, `JWT_SECRET` |
+| `recipe-service` | `SPOONACULAR_API_KEY` |
+| `reminder-service` | `MONGO_URI`, `JWT_SECRET` |
+| `user-service` | `MONGO_URI`, `JWT_SECRET` |
+
+> [!IMPORTANT]
+> `GMAIL_PASSWORD` should be a Gmail App Password, not your actual Gmail password. Generate one at Google Account → Security → 2-Step Verification → App Passwords.
+
+> [!NOTE]
+> The `.env` file is not included in the repository and is listed in `.gitignore` for security reasons.
 
 ## 4. Run the Application
 > [!IMPORTANT]
-> _*Make sure docker is already running._
+> Make sure Docker Desktop is already running before executing the command below.
+
+> [!NOTE]
+> This project uses Redis as a caching layer. It is automatically started as a container via Docker Compose — no separate installation is required.
+
+
 ```
 docker compose up --build
 ```
-This will start all services and their dependencies (like MongoDB) in containers.
+This will start all services and their dependencies in containers, including MongoDB and Redis.
