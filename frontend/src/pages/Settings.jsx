@@ -1,79 +1,47 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import {
-  User,
-  Bell,
-  Palette,
-  LogOut,
-  Trash2,
-  Save,
-  Check,
-  Lock,
-  Edit,
-  TriangleAlert,
-  X,
-} from "lucide-react";
-import { usersAPI } from "../services/api";
+import { User, Mail, Check, Lock, TriangleAlert, X } from "lucide-react";
+import { usersAPI, authAPI } from "../services/api";
 
 const Settings = () => {
   const { user, logout, setUser } = useAuth();
   const navigate = useNavigate();
-
-  const [settings, setSettings] = useState({
-    emailNotifications: true,
-    pushNotifications: false,
-    defaultReminderDays: "3",
-    theme: "dark",
-  });
 
   const [saved, setSaved] = useState(false);
 
   // MODALS STATE
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // FORM STATES
   const [profileData, setProfileData] = useState({
     firstName: user?.firstName || "",
     lastName: user?.lastName || "",
-    email: user?.email || "",
   });
+
+  const [emailData, setEmailData] = useState({
+    newEmail: "",
+    password: "",
+  });
+  const [emailError, setEmailError] = useState("");
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailSuccess, setEmailSuccess] = useState("");
 
   const [passwordData, setPasswordData] = useState({
     oldPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
-
   const [passwordError, setPasswordError] = useState("");
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setSettings((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-    setSaved(false);
-  };
-
-  const handleSave = (e) => {
-    e.preventDefault();
-    localStorage.setItem("userSettings", JSON.stringify(settings));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    navigate("/");
-  };
+  const [countdown, setCountdown] = useState(null);
 
   // ================= PROFILE UPDATE =================
   const handleProfileUpdate = async () => {
     try {
-      console.log("USER:", user);
       const updated = await usersAPI.updateUser(user.userId, profileData);
       setUser(updated);
       setShowProfileModal(false);
@@ -85,7 +53,50 @@ const Settings = () => {
     }
   };
 
-  // ================= PASSWORD UPDATE =================
+  const handleEmailChange = async () => {
+    setEmailError("");
+    setEmailSuccess("");
+    setEmailLoading(true);
+
+    try {
+      await usersAPI.requestEmailChange({
+        newEmail: emailData.newEmail,
+        password: emailData.password,
+      });
+
+      setCountdown(3);
+      setEmailSuccess("Verification email sent! Logging out in 3...");
+
+      let counter = 3;
+
+      const interval = setInterval(async () => {
+        counter--;
+
+        if (counter > 0) {
+          setCountdown(counter);
+          setEmailSuccess(
+            `Verification email sent! Logging out in ${counter}...`,
+          );
+        } else {
+          clearInterval(interval);
+
+          navigate("/verify-email-notice");
+
+          setTimeout(() => {
+            logout();
+          }, 100);
+        }
+      }, 1000);
+    } catch (err) {
+      console.error(err);
+      const message =
+        err.response?.data?.message || "Failed to request email change";
+      setEmailError(message);
+    } finally {
+      setEmailLoading(false);
+    }
+  };
+
   const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       return setPasswordError("Passwords do not match");
@@ -168,19 +179,35 @@ const Settings = () => {
           </div>
 
           <div>
-            <div className="font-semibold text-lg">
+            <div className="text-muted-foreground">
               {user?.firstName} {user?.lastName}
             </div>
-            <div className="text-sm text-muted-foreground">{user?.email}</div>
           </div>
         </div>
+      </div>
+
+      {/* EMAIL */}
+      <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-sm flex justify-between items-center">
+        <div className="flex items-center gap-2">
+          <Mail size={20} className="text-primary" />
+          <span className="text-muted-foreground">{user?.email}</span>
+        </div>
+
+        <button
+          onClick={() => setShowEmailModal(true)}
+          className="text-sm px-3 py-2 rounded-lg 
+            bg-primary border text-white btn 
+            hover:bg-primary/20 hover:text-primary hover:border-primary transition"
+        >
+          Change
+        </button>
       </div>
 
       {/* CHANGE PASSWORD */}
       <div className="bg-white/20 backdrop-blur-md border border-white/30 rounded-2xl p-6 shadow-sm flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Lock size={20} className="text-primary" />
-          <span className="font-medium">Password</span>
+          <span className="text-muted-foreground">Password</span>
         </div>
 
         <button
@@ -244,24 +271,76 @@ const Settings = () => {
               }
               className="w-full p-2 border rounded-lg"
             />
-
-            <label className="block text-sm font-medium text-foreground mb-1">
-              Email
-            </label>
-            <input
-              placeholder="Email"
-              value={profileData.email}
-              onChange={(e) =>
-                setProfileData({ ...profileData, email: e.target.value })
-              }
-              className="w-full p-2 border rounded-lg"
-            />
-
             <button
               onClick={handleProfileUpdate}
               className="w-full p-2 rounded-xl bg-primary text-white font-semibold hover:scale-[1.02] transition duration-500 hover:shadow-xl"
             >
               Save
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* EMAIL MODAL */}
+      {showEmailModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-primary/20 glass glass-strong rounded-2xl p-6 w-full max-w-md space-y-4">
+            {emailError && (
+              <p className="w-full bg-red-500/80 rounded-xl p-4 text-white text-sm text-center">
+                {emailError}
+              </p>
+            )}
+
+            {emailSuccess && (
+              <p className="w-full bg-green-500/80 rounded-xl p-4 text-white text-sm text-center">
+                {emailSuccess}
+              </p>
+            )}
+
+            <div className="flex justify-between">
+              <h2 className="font-semibold">Change Email</h2>
+              <X
+                onClick={() => setShowEmailModal(false)}
+                className="cursor-pointer"
+              />
+            </div>
+
+            <label className="block text-sm font-medium text-foreground mb-1">
+              New Email
+            </label>
+            <input
+              type="email"
+              placeholder="Enter new email"
+              value={emailData.newEmail}
+              onChange={(e) => {
+                setEmailData({ ...emailData, newEmail: e.target.value });
+                setEmailError("");
+              }}
+              className="w-full p-2 border rounded-lg"
+            />
+
+            <label className="block text-sm font-medium text-foreground mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              placeholder="Enter password"
+              value={emailData.password}
+              onChange={(e) => {
+                setEmailData({ ...emailData, password: e.target.value });
+                setEmailError("");
+              }}
+              className="w-full p-2 border rounded-lg"
+            />
+
+            <button
+              onClick={handleEmailChange}
+              disabled={emailLoading}
+              className="w-full p-2 rounded-xl bg-primary text-white font-semibold 
+                   hover:scale-[1.02] transition duration-500 hover:shadow-xl
+                   disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {emailLoading ? "Sending..." : "Send Verification"}
             </button>
           </div>
         </div>
@@ -325,7 +404,7 @@ const Settings = () => {
               onChange={(e) => {
                 setPasswordData({
                   ...passwordData,
-                 confirmPassword: e.target.value,
+                  confirmPassword: e.target.value,
                 });
                 setPasswordError(""); // clear error while typing
               }}

@@ -1,5 +1,7 @@
 const userService = require("../services/user.service");
 const bcrypt = require("bcryptjs");
+const sendEmail = require("../utils/email.service");
+const verifyEmailTemplate = require("../templates/verifyEmailTemplate");
 
 const getMe = async (req, res) => {
   try {
@@ -83,6 +85,30 @@ const changePassword = async (req, res) => {
   }
 };
 
+const requestEmailChange = async (req, res) => {
+  try {
+    const result = await userService.requestEmailChange(req.user.id, req.body.newEmail, req.body.password);
+
+    if (!result) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { verificationToken } = result;
+
+    const verifyURL = `http://localhost:5173/verify-email/${verificationToken}`;
+
+    await sendEmail(
+      req.body.newEmail,
+      "Verify Your New Email",
+      verifyEmailTemplate({ verifyURL }),
+    );
+
+    res.json({ message: "Verification sent to new email" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 const deleteUser = async (req, res) => {
   try {
     const user = await userService.deleteUser(req.user.id);
@@ -107,6 +133,7 @@ module.exports = {
   getUserById,
   updateUser,
   changePassword,
+  requestEmailChange,
   deleteUser,
   logout,
 };

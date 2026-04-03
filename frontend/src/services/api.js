@@ -33,7 +33,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 403) {
       // Only clear auth if token exists
       const token = localStorage.getItem("token");
 
@@ -71,6 +71,18 @@ export const authAPI = {
     return response.data;
   },
 
+  verifyEmail: async (token) => {
+    const response = await api.get(`${AUTH_URL}/verify-email/${token}`);
+    return response.data;
+  },
+
+  resendVerification: async (email) => {
+    const response = await api.post(`${AUTH_URL}/resend-verification`, {
+      email,
+    });
+    return response.data;
+  },
+
   logout: async () => {
     const response = await api.post(`${USERS_URL}/logout`);
     return response.data;
@@ -92,6 +104,12 @@ export const usersAPI = {
     const response = await api.put(`${USERS_URL}/password`, data);
     return response.data;
   },
+
+  requestEmailChange: async (data) => {
+    const response = await api.post(`${USERS_URL}/request-email-change`, data);
+    return response.data;
+  },
+
   deleteUser: async (userId) => {
     const res = await api.delete(`${USERS_URL}/${userId}`);
     return res.data;

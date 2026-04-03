@@ -60,7 +60,7 @@ const Register = () => {
     const result = await register(userData);
 
     if (result.success) {
-      navigate("/login");
+      navigate("/verify-email-notice");
     } else {
       setError(result.error);
     }

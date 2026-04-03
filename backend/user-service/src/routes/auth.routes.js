@@ -7,5 +7,7 @@ router.post("/register", registerValidationRules, validate, authController.regis
 router.post("/login", authController.login);
 router.post("/forgot-password", authController.forgotPassword);
 router.post("/reset-password/:token", authController.resetPassword);
+router.get("/verify-email/:token", authController.verifyEmail);
+router.post("/resend-verification", authController.resendVerification);
 
 module.exports = router;

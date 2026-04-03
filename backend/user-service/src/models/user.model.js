@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    pendingEmail: String,
     password: {
       type: String,
       required: true,
@@ -25,6 +26,12 @@ const userSchema = new mongoose.Schema(
     resetPasswordExpires: {
       type: Date,
     },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationToken: String,
+    emailVerificationExpires: Date,
   },
   { timestamps: true },
 );

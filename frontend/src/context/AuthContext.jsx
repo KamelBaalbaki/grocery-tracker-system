@@ -119,6 +119,7 @@ export const AuthProvider = ({ children }) => {
     setUser,
     loading,
     isAuthenticated: !!user,
+    isEmailVerified: user?.isEmailVerified || false,
     register,
     login,
     logout,

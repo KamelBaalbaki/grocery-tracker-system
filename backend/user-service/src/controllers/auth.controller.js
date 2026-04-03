@@ -4,6 +4,7 @@ const generateToken = require("../utils/jwt");
 const crypto = require("crypto");
 const sendEmail = require("../utils/email.service");
 const resetPasswordEmail = require("../templates/resetPasswordEmail");
+const verifyEmailTemplate = require("../templates/verifyEmailTemplate");
 
 const register = async (req, res) => {
   try {
@@ -29,19 +30,19 @@ const register = async (req, res) => {
       password,
     });
 
-    const token = generateToken({
-      userId: user._id,
-      email: user.email,
-    });
+    const verificationToken = await userService.setEmailVerificationToken(user);
+
+    const verifyURL = `http://localhost:5173/verify-email/${verificationToken}`;
+
+    await sendEmail(
+      user.email,
+      "Verify Your Email",
+      verifyEmailTemplate({ verifyURL }),
+    );
 
     res.status(201).json({
-      user: {
-        userId: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-      },
-      token,
+      message:
+        "User registered successfully. Please check your email to verify your account.",
     });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
@@ -63,6 +64,12 @@ const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
+    if (!user.isEmailVerified) {
+      return res.status(403).json({
+        message: "Please verify your email before logging in",
+      });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: "Invalid credentials" });
@@ -79,6 +86,7 @@ const login = async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
+        isEmailVerified: user.isEmailVerified,
       },
       token,
     });
@@ -145,18 +153,14 @@ const resetPassword = async (req, res) => {
         .json({ message: "Password must be at least 8 characters" });
     }
     if (!/[A-Z]/.test(password)) {
-      return res
-        .status(400)
-        .json({
-          message: "Password must contain at least one uppercase letter",
-        });
+      return res.status(400).json({
+        message: "Password must contain at least one uppercase letter",
+      });
     }
     if (!/[a-z]/.test(password)) {
-      return res
-        .status(400)
-        .json({
-          message: "Password must contain at least one lowercase letter",
-        });
+      return res.status(400).json({
+        message: "Password must contain at least one lowercase letter",
+      });
     }
     if (!/[0-9]/.test(password)) {
       return res
@@ -164,11 +168,9 @@ const resetPassword = async (req, res) => {
         .json({ message: "Password must contain at least one number" });
     }
     if (!/[\W_]/.test(password)) {
-      return res
-        .status(400)
-        .json({
-          message: "Password must contain at least one special character",
-        });
+      return res.status(400).json({
+        message: "Password must contain at least one special character",
+      });
     }
 
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
@@ -187,9 +189,59 @@ const resetPassword = async (req, res) => {
   }
 };
 
+const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    const user = await userService.findUserByVerificationToken(token);
+
+    if (!user) {
+      return res.status(400).json({
+        message: "Token invalid or expired",
+      });
+    }
+
+    await userService.verifyUserEmail(user);
+
+    res.json({ message: "Email verified successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const resendVerification = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await userService.findUserByEmail(email);
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ message: "Already verified" });
+    }
+
+    const verificationToken = await userService.setEmailVerificationToken(user);
+
+    const verifyURL = `http://localhost:5173/verify-email/${verificationToken}`;
+
+    await sendEmail(
+      user.email,
+      "Verify Your Email",
+      verifyEmailTemplate({ verifyURL }),
+    );
+
+    res.json({ message: "Verification email sent" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   register,
   login,
   forgotPassword,
   resetPassword,
+  verifyEmail,
+  resendVerification,
 };

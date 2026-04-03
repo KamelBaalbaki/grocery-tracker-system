@@ -16,6 +16,8 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if(loading) return;
+
     setMessage("");
     setError("");
     setLoading(true);

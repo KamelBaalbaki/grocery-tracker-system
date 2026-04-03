@@ -16,12 +16,18 @@ import Reminders from "./pages/Reminders";
 import Recipes from "./pages/Recipes";
 import EcoInsights from "./pages/EcoInsights";
 import Settings from "./pages/Settings";
-import ForgotPassword from "./pages/ForgotPassword"
+import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
-// Protected Route
+// Email Verification Pages
+import VerifyEmail from "./pages/VerifyEmail";
+import VerifyYourEmail from "./pages/VerifyEmailNotice";
+import SendVerification from "./pages/SendEmailVerification";
+
+
+// 🔐 Protected Route (AUTH + VERIFIED)
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, isEmailVerified, loading } = useAuth();
 
   if (loading) {
     return (
@@ -31,55 +37,58 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
+  // Not logged in
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
+  }
+
+  // Logged in but NOT verified
+  if (!isEmailVerified) {
+    return <Navigate to="/verify-your-email" replace />;
+  }
+
+  // Fully authenticated
+  return children;
+};
+
+
+// Public Route (redirect if already logged in)
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, isEmailVerified } = useAuth();
+
+  if (isAuthenticated) {
+    return isEmailVerified
+      ? <Navigate to="/dashboard" replace />
+      : <Navigate to="/verify-email-notice" replace />;
   }
 
   return children;
 };
 
-function App() {
-  const { isAuthenticated } = useAuth();
 
+function App() {
   return (
     <Routes>
+
       {/* Public Routes */}
-      <Route
-        path="/"
-        element={
-          isAuthenticated ? <Navigate to="/dashboard" replace /> : <Home />
-        }
-      />
+      <Route path="/" element={<PublicRoute><Home /></PublicRoute>} />
 
-      <Route
-        path="/login"
-        element={
-          isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />
-        }
-      />
+      <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
 
-      <Route
-        path="/register"
-        element={
-          isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />
-        }
-      />
+      <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
 
-      <Route
-        path="/forgot-password"
-        element={
-          isAuthenticated ? <Navigate to="/dashboard" replace /> : <ForgotPassword />
-        }
-      />
+      <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
 
-      <Route
-        path="/reset-password/:token"
-        element={
-          isAuthenticated ? <Navigate to="/dashboard" replace /> : <ResetPassword />
-        }
-      />
+      <Route path="/reset-password/:token" element={<PublicRoute><ResetPassword /></PublicRoute>} />
 
-      {/* Protected Dashboard */}
+
+      {/* Email Verification Routes */}
+      <Route path="/verify-email-notice" element={<VerifyYourEmail />} />
+      <Route path="/verify-email/:token" element={<VerifyEmail />} />
+      <Route path="/send-verification" element={<SendVerification />} />
+
+
+      {/* Protected Dashboard Routes */}
       <Route
         path="/dashboard"
         element={
@@ -112,6 +121,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/edit-item/:id"
         element={
@@ -122,7 +132,8 @@ function App() {
           </ProtectedRoute>
         }
       />
-       <Route
+
+      <Route
         path="/notifications"
         element={
           <ProtectedRoute>
@@ -132,6 +143,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/reminders"
         element={
@@ -142,6 +154,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/recipes"
         element={
@@ -152,7 +165,8 @@ function App() {
           </ProtectedRoute>
         }
       />
-       <Route
+
+      <Route
         path="/eco-insights"
         element={
           <ProtectedRoute>
@@ -162,6 +176,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/settings"
         element={
@@ -173,8 +188,10 @@ function App() {
         }
       />
 
-      {/* Catch all */}
+
+      {/* Catch All */}
       <Route path="*" element={<Navigate to="/" replace />} />
+
     </Routes>
   );
 }

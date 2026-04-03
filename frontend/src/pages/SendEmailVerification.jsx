@@ -1,0 +1,85 @@
+import { useState } from "react";
+import { authAPI } from "../services/api";
+import { Mail, AlertCircle } from "lucide-react";
+import Navbar from "../layout/Navbar";
+
+const ResendVerification = () => {
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    setMessage("");
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await authAPI.resendVerification(email);
+      setMessage(res.message);
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Something went wrong"
+      );
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-brand flex flex-col">
+      <Navbar />
+
+      <div className="flex flex-1 items-center justify-center px-6 py-16">
+        <div className="w-full max-w-md bg-primary/20 glass glass-strong backdrop-blur-xl border border-border rounded-2xl p-8 shadow-xl">
+
+          <h1 className="text-3xl font-bold text-primary text-center mb-2">
+            Send Verification
+          </h1>
+
+          <p className="text-muted-foreground text-center mb-8">
+            Enter your email to receive a new verification link
+          </p>
+
+          {message && (
+            <div className="text-green-500 mb-4">{message}</div>
+          )}
+
+          {error && (
+            <div className="flex items-center gap-2 text-red-500 mb-4">
+              <AlertCircle size={18} />
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2" size={18} />
+
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full pl-10 pr-4 py-3 rounded-xl border"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full btn background-gradient text-white py-3 rounded-xl"
+            >
+              {loading ? "Sending..." : "Send Email"}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ResendVerification;
