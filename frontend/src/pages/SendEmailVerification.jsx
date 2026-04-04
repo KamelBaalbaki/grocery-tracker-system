@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { authAPI } from "../services/api";
 import { Mail, AlertCircle } from "lucide-react";
 import Navbar from "../layout/Navbar";
@@ -20,9 +21,7 @@ const ResendVerification = () => {
       const res = await authAPI.resendVerification(email);
       setMessage(res.message);
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Something went wrong"
-      );
+      setError(err.response?.data?.message || "Something went wrong");
     }
 
     setLoading(false);
@@ -34,18 +33,15 @@ const ResendVerification = () => {
 
       <div className="flex flex-1 items-center justify-center px-6 py-16">
         <div className="w-full max-w-md bg-primary/20 glass glass-strong backdrop-blur-xl border border-border rounded-2xl p-8 shadow-xl">
-
           <h1 className="text-3xl font-bold text-primary text-center mb-2">
             Send Verification
           </h1>
 
           <p className="text-muted-foreground text-center mb-8">
-            Enter your email to receive a new verification link
+            Enter your email to receive a verification link
           </p>
 
-          {message && (
-            <div className="text-green-500 mb-4">{message}</div>
-          )}
+          {message && <div className="text-green-500 mb-4">{message}</div>}
 
           {error && (
             <div className="flex items-center gap-2 text-red-500 mb-4">
@@ -56,7 +52,10 @@ const ResendVerification = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2" size={18} />
+              <Mail
+                className="absolute left-3 top-1/2 -translate-y-1/2"
+                size={18}
+              />
 
               <input
                 type="email"
@@ -71,11 +70,26 @@ const ResendVerification = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn background-gradient text-white py-3 rounded-xl"
+              className="w-full flex items-center justify-center gap-2 py-3 btn rounded-xl background-gradient text-white font-semibold hover:bg-foreground/90 transition duration-300"
             >
-              {loading ? "Sending..." : "Send Email"}
+              {loading ? (
+                <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+              ) : (
+                <>Send Email Verifcation Link</>
+              )}
             </button>
           </form>
+
+          {/* Footer */}
+          <div className="text-center mt-6 text-sm text-muted-foreground">
+            Already Verified?{" "}
+            <Link
+              to="/login"
+              className="text-primary font-semibold hover:underline"
+            >
+              Back to login
+            </Link>
+          </div>
         </div>
       </div>
     </div>

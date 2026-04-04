@@ -125,14 +125,25 @@ const Login = () => {
           </form>
 
           {/* Footer */}
-          <div className="text-center mt-6 text-sm text-muted-foreground">
-            Forgot your password?{" "}
-            <Link
-              to="/forgot-password"
-              className="text-primary font-semibold hover:underline"
-            >
-              Click here
-            </Link>
+          <div className="mt-6 text-sm text-muted-foreground flex flex-col gap-2 items-center">
+            <div>
+              Forgot your password?{" "}
+              <Link
+                to="/forgot-password"
+                className="text-primary font-semibold hover:underline"
+              >
+                Click here
+              </Link>
+            </div>
+            <div>
+              Verify your email!{" "}
+              <Link
+                to="/send-verification"
+                className="text-primary font-semibold hover:underline"
+              >
+                Click here
+              </Link>
+            </div>
           </div>
         </div>
       </div>

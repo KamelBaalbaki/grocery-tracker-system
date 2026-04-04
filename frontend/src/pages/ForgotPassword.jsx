@@ -101,7 +101,7 @@ const ForgotPassword = () => {
 
           {/* Footer */}
           <div className="text-center mt-6 text-sm text-muted-foreground">
-            Remember your password?{" "}
+            Remembered your password?{" "}
             <Link
               to="/login"
               className="text-primary font-semibold hover:underline"
