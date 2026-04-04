@@ -16,6 +16,7 @@ The Grocery Tracker application provides the following key features:
 
 ### User Management
 - User Registration & Login: Secure authentication using JWT tokens and password hashing with bcrypt.
+- Email Verification: Users must verify their emails in order to log in.
 - Profile Management: View, update, or delete your account.
 - Logout: Stateless logout to protect user sessions.
 
