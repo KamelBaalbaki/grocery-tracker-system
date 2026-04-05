@@ -34,7 +34,7 @@ const ResendVerification = () => {
       <div className="flex flex-1 items-center justify-center px-6 py-16">
         <div className="w-full max-w-md bg-primary/20 glass glass-strong backdrop-blur-xl border border-border rounded-2xl p-8 shadow-xl">
           <h1 className="text-3xl font-bold text-primary text-center mb-2">
-            Send Verification
+            Verify Your Email
           </h1>
 
           <p className="text-muted-foreground text-center mb-8">

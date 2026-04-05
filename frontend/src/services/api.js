@@ -100,13 +100,13 @@ export const usersAPI = {
     return res.data;
   },
 
-  updatePassword: async (data) => {
-    const response = await api.put(`${USERS_URL}/password`, data);
+  requestEmailChange: async (data) => {
+    const response = await api.post(`${USERS_URL}/request-email-change`, data);
     return response.data;
   },
 
-  requestEmailChange: async (data) => {
-    const response = await api.post(`${USERS_URL}/request-email-change`, data);
+  updatePassword: async (data) => {
+    const response = await api.put(`${USERS_URL}/password`, data);
     return response.data;
   },
 

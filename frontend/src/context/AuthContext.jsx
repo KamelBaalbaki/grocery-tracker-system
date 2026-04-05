@@ -19,19 +19,30 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+  const init = async () => {
     const token = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
 
-    if (token && storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-
-      connectSocket(parsedUser);
-      checkUnreadNotifications();
+    if (!token) {
+      setLoading(false);
+      return;
     }
 
-    setLoading(false);
-  }, []);
+    try {
+      const user = await authAPI.getMe();
+      setUser(user);
+
+      connectSocket(user);
+      checkUnreadNotifications();
+    } catch (err) {
+      console.error("Failed to fetch user:", err);
+      logout();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  init();
+}, []);
 
   const connectSocket = (user) => {
     const newSocket = io("http://localhost:4004", {

@@ -116,7 +116,7 @@
   background: linear-gradient(
     120deg,
     transparent,
-    color-mix(in srgb, var(--color-primary) 40%, white),
+    color-mix(in srgb,rgb(216, 216, 216) 40%, white),
     transparent
   );
 

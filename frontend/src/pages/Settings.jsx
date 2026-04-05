@@ -15,6 +15,7 @@ const Settings = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // FORM STATES
   const [profileData, setProfileData] = useState({
@@ -27,7 +28,6 @@ const Settings = () => {
     password: "",
   });
   const [emailError, setEmailError] = useState("");
-  const [emailLoading, setEmailLoading] = useState(false);
   const [emailSuccess, setEmailSuccess] = useState("");
 
   const [passwordData, setPasswordData] = useState({
@@ -36,11 +36,14 @@ const Settings = () => {
     confirmPassword: "",
   });
   const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState("");
 
   const [countdown, setCountdown] = useState(null);
 
   // ================= PROFILE UPDATE =================
-  const handleProfileUpdate = async () => {
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault();
+    setLoading(true);
     try {
       const updated = await usersAPI.updateUser(user.userId, profileData);
       setUser(updated);
@@ -51,17 +54,24 @@ const Settings = () => {
       console.error("DATA:", err.response?.data);
       alert(err.response?.data?.message || "Failed to update profile");
     }
+    setLoading(false);
   };
 
-  const handleEmailChange = async () => {
+  const handleEmailChange = async (e) => {
+    e.preventDefault();
     setEmailError("");
     setEmailSuccess("");
-    setEmailLoading(true);
+    setLoading(true);
 
     try {
       await usersAPI.requestEmailChange({
         newEmail: emailData.newEmail,
         password: emailData.password,
+      });
+
+      setEmailData({
+        newEmail: "",
+        password: "",
       });
 
       setCountdown(3);
@@ -93,14 +103,24 @@ const Settings = () => {
         err.response?.data?.message || "Failed to request email change";
       setEmailError(message);
     } finally {
-      setEmailLoading(false);
+      setLoading(false);
     }
   };
 
-  const handlePasswordChange = async () => {
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+
+    // ✅ reset states
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    // ✅ validate first
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      return setPasswordError("Passwords do not match");
+      setPasswordError("Passwords do not match");
+      return;
     }
+
+    setLoading(true);
 
     try {
       await usersAPI.updatePassword({
@@ -108,17 +128,43 @@ const Settings = () => {
         newPassword: passwordData.newPassword,
       });
 
-      setShowPasswordModal(false);
-      setPasswordData({
-        oldPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
+      // ✅ show success first (keep modal open)
+      setCountdown(3);
+      setPasswordSuccess("Password updated successfully! Returning in 3...");
+
+      let counter = 3;
+
+      const interval = setInterval(() => {
+        counter--;
+
+        if (counter > 0) {
+          setCountdown(counter);
+          setPasswordSuccess(
+            `Password updated successfully! Returning in ${counter}...`,
+          );
+        } else {
+          clearInterval(interval);
+
+          // ✅ close modal AFTER countdown
+          setShowPasswordModal(false);
+
+          // ✅ reset form
+          setPasswordData({
+            oldPassword: "",
+            newPassword: "",
+            confirmPassword: "",
+          });
+
+          setPasswordSuccess("");
+        }
+      }, 1000);
     } catch (err) {
       console.error(err);
       const message =
         err.response?.data?.message || "Failed to update password";
       setPasswordError(message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -164,9 +210,7 @@ const Settings = () => {
 
           <button
             onClick={() => setShowProfileModal(true)}
-            className="text-sm px-5.5 py-2 rounded-lg 
-                  bg-primary border text-white btn 
-                  hover:bg-primary/20 hover:text-primary hover:border-primary transition"
+            className="text-sm px-5.5 py-2 btn rounded-lg background-gradient text-white hover:bg-foreground/90 transition duration-300"
           >
             Edit
           </button>
@@ -195,9 +239,7 @@ const Settings = () => {
 
         <button
           onClick={() => setShowEmailModal(true)}
-          className="text-sm px-3 py-2 rounded-lg 
-            bg-primary border text-white btn 
-            hover:bg-primary/20 hover:text-primary hover:border-primary transition"
+          className="text-sm px-3 py-2 btn rounded-lg background-gradient text-white hover:bg-foreground/90 transition duration-300"
         >
           Change
         </button>
@@ -212,9 +254,7 @@ const Settings = () => {
 
         <button
           onClick={() => setShowPasswordModal(true)}
-          className="text-sm px-3 py-2 rounded-lg 
-                  bg-primary border text-white btn 
-                  hover:bg-primary/20 hover:text-primary hover:border-primary transition"
+          className="text-sm px-3 py-2 btn rounded-lg background-gradient text-white hover:bg-foreground/90 transition duration-300"
         >
           Change
         </button>
@@ -229,9 +269,7 @@ const Settings = () => {
 
         <button
           onClick={() => setShowDeleteModal(true)}
-          className="text-sm px-3 py-2 rounded-lg 
-                  bg-red-500 border text-white btn 
-                  hover:bg-red-500/20 hover:text-red-500 hover:border-red-500 transition"
+          className="text-sm px-3 py-2 btn rounded-lg text-white bg-gradient-to-b from-red-500 to-red-800 transition duration-300"
         >
           Delete Account
         </button>
@@ -240,7 +278,7 @@ const Settings = () => {
       {/* PROFILE MODAL */}
       {showProfileModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-primary/20 glass glass-strong rounded-2xl p-6 w-full max-w-md space-y-4">
+          <form className="bg-primary/20 glass glass-strong rounded-2xl p-6 w-full max-w-md space-y-4">
             <div className="flex justify-between">
               <h2 className="font-semibold">Edit Profile</h2>
               <X
@@ -272,27 +310,33 @@ const Settings = () => {
               className="w-full p-2 border rounded-lg"
             />
             <button
+              type="submit"
+              disabled={loading}
               onClick={handleProfileUpdate}
-              className="w-full p-2 rounded-xl bg-primary text-white font-semibold hover:scale-[1.02] transition duration-500 hover:shadow-xl"
+              className="w-full flex items-center justify-center gap-2 py-3 btn rounded-xl background-gradient text-white font-semibold hover:bg-foreground/90 transition duration-300"
             >
-              Save
+              {loading ? (
+                <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+              ) : (
+                <>Save</>
+              )}
             </button>
-          </div>
+          </form>
         </div>
       )}
 
       {/* EMAIL MODAL */}
       {showEmailModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-primary/20 glass glass-strong rounded-2xl p-6 w-full max-w-md space-y-4">
+          <form className="bg-primary/20 glass glass-strong rounded-2xl p-6 w-full max-w-md space-y-4">
             {emailError && (
-              <p className="w-full bg-red-500/80 rounded-xl p-4 text-white text-sm text-center">
+              <p className="w-full bg-red-500/80 rounded-xl p-4 text-white text-sm">
                 {emailError}
               </p>
             )}
 
             {emailSuccess && (
-              <p className="w-full bg-green-500/80 rounded-xl p-4 text-white text-sm text-center">
+              <p className="w-full bg-green-500/80 rounded-xl p-4 text-white text-sm">
                 {emailSuccess}
               </p>
             )}
@@ -324,7 +368,7 @@ const Settings = () => {
             </label>
             <input
               type="password"
-              placeholder="Enter password"
+              placeholder="Enter your password"
               value={emailData.password}
               onChange={(e) => {
                 setEmailData({ ...emailData, password: e.target.value });
@@ -334,25 +378,33 @@ const Settings = () => {
             />
 
             <button
+              type="submit"
+              disabled={loading}
               onClick={handleEmailChange}
-              disabled={emailLoading}
-              className="w-full p-2 rounded-xl bg-primary text-white font-semibold 
-                   hover:scale-[1.02] transition duration-500 hover:shadow-xl
-                   disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 py-3 btn rounded-xl background-gradient text-white font-semibold hover:bg-foreground/90 transition duration-300"
             >
-              {emailLoading ? "Sending..." : "Send Verification"}
+              {loading ? (
+                <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+              ) : (
+                <>Change Your Email</>
+              )}
             </button>
-          </div>
+          </form>
         </div>
       )}
 
       {/* PASSWORD MODAL */}
       {showPasswordModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-primary/20 glass glass-strong rounded-2xl p-6 w-full max-w-md space-y-4">
+          <form className="bg-primary/20 glass glass-strong rounded-2xl p-6 w-full max-w-md space-y-4">
             {passwordError && (
               <p className="w-full text-start bg-red-500/80 rounded-xl p-4 text-white text-sm text-center">
                 {passwordError}
+              </p>
+            )}
+            {passwordSuccess && (
+              <p className="w-full bg-green-500/80 rounded-xl p-4 text-white text-sm">
+                {passwordSuccess}
               </p>
             )}
             <div className="flex justify-between">
@@ -415,12 +467,18 @@ const Settings = () => {
             </p>
 
             <button
+              type="submit"
+              disabled={loading}
               onClick={handlePasswordChange}
-              className="w-full p-2 rounded-xl bg-primary text-white font-semibold hover:scale-[1.02] transition duration-500 hover:shadow-xl"
+              className="w-full flex items-center justify-center gap-2 py-3 btn rounded-xl background-gradient text-white font-semibold hover:bg-foreground/90 transition duration-300"
             >
-              Update Password
+              {loading ? (
+                <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+              ) : (
+                <>Update Your Password</>
+              )}
             </button>
-          </div>
+          </form>
         </div>
       )}
 
@@ -439,7 +497,7 @@ const Settings = () => {
               </button>
               <button
                 onClick={handleDeleteAccount}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:scale-[1.02] transition duration-500 hover:shadow-lg"
+                className="px-4 py-2 btn rounded-lg text-white bg-gradient-to-b from-red-500 to-red-800 transition duration-300"
               >
                 Yes
               </button>
