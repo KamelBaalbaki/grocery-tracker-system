@@ -307,7 +307,7 @@ const AddItem = () => {
             <button
               type="button"
               onClick={() => navigate("/grocery-list")}
-              className="flex flex-grow justify-center items-center gap-2 px-4 py-2 rounded-xl bg-white border border-border hover:scale-[1.02] transition duration-500 hover:shadow-lg"
+              className="flex flex-grow justify-center items-center gap-2 px-4 py-2 rounded-xl bg-white border border-border hover:scale-[1.02] transition duration-300 hover:shadow-lg"
             >
               Cancel
             </button>
@@ -315,7 +315,7 @@ const AddItem = () => {
             <button
               type="submit"
               disabled={loading}
-              className="flex flex-grow justify-center items-center gap-2 p-3 rounded-xl bg-primary text-white font-semibold hover:scale-[1.02] transition duration-500 hover:shadow-xl"
+              className="flex flex-grow justify-center items-center gap-2 p-3 rounded-xl btn rounded-xl background-gradient text-white font-semibold hover:bg-foreground/90 hover:scale-[1.02] transition duration-300 hover:shadow-xl"
             >
               {isEditing ? "Update Item" : "Add Item"}
             </button>

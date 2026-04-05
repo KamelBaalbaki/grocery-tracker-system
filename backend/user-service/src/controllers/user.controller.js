@@ -87,7 +87,18 @@ const changePassword = async (req, res) => {
 
 const requestEmailChange = async (req, res) => {
   try {
-    const result = await userService.requestEmailChange(req.user.id, req.body.newEmail, req.body.password);
+
+    const { newEmail, password } = req.body;
+
+    if (!newEmail) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
+    const result = await userService.requestEmailChange(req.user.id, newEmail, password);
 
     if (!result) {
       return res.status(404).json({ message: "User not found" });

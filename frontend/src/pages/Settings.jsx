@@ -491,13 +491,13 @@ const Settings = () => {
             <div className="flex justify-center gap-4 mt-4">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 bg-white border border-border rounded-lg hover:scale-[1.02] transition duration-500 hover:shadow-lg"
+                className="px-4 py-2 bg-white border border-border rounded-lg hover:scale-[1.02] transition duration-300 hover:shadow-lg"
               >
                 No
               </button>
               <button
                 onClick={handleDeleteAccount}
-                className="px-4 py-2 btn rounded-lg text-white bg-gradient-to-b from-red-500 to-red-800 transition duration-300"
+                className="px-4 py-2 btn rounded-lg text-white bg-gradient-to-b from-red-500 to-red-800 transition duration-300 hover:scale-[1.02] hover:shadow-lg"
               >
                 Yes
               </button>

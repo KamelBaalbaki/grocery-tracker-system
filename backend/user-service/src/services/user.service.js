@@ -23,10 +23,6 @@ const getUserById = async (id) => {
 const updateUser = async (id, data) => {
   if (!mongoose.Types.ObjectId.isValid(id)) return null;
 
-  if (data.password) {
-    data.password = await bcrypt.hash(data.password, 10);
-  }
-
   return await User.findByIdAndUpdate(id, { $set: data }, { new: true }).select(
     "-password",
   );

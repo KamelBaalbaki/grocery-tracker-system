@@ -313,14 +313,14 @@ const GroceryList = () => {
                 <button
                   type="button"
                   onClick={() => setShowReminderModal(false)}
-                  className="px-4 py-2 bg-white border border-border rounded-lg hover:scale-[1.02] transition duration-500 hover:shadow-lg"
+                  className="px-4 py-2 bg-white border border-border rounded-lg hover:scale-[1.02] transition duration-300 hover:shadow-lg"
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  className="px-4 py-2 background-gradient text-white rounded-lg hover:scale-[1.02] transition duration-500 hover:shadow-lg"
+                  className="px-4 py-2 btn background-gradient text-white rounded-lg hover:scale-[1.02] transition duration-300 hover:shadow-lg"
                 >
                   Save Reminder
                 </button>
@@ -463,14 +463,14 @@ const GroceryList = () => {
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setDeleteModal(false)}
-                className="px-4 py-2 bg-white border border-border rounded-lg hover:scale-[1.02] transition duration-500 hover:shadow-lg"
+                className="px-4 py-2 bg-white border border-border rounded-lg hover:scale-[1.02] transition duration-300 hover:shadow-lg"
               >
                 Cancel
               </button>
 
               <button
                 onClick={confirmDelete}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:scale-[1.02] transition duration-500 hover:shadow-lg"
+                className="px-4 py-2 btn rounded-lg text-white bg-gradient-to-b from-red-500 to-red-800 hover:scale-[1.02] transition duration-300 hover:shadow-lg"
               >
                 Delete
               </button>

@@ -213,8 +213,8 @@ const Dashboard = () => {
           <Link
             to="/add-item"
             className="flex items-center justify-center gap-2 
-            bg-primary text-white border py-3 rounded-xl btn
-            hover:bg-primary/20 hover:text-primary hover:border-primary transition duration-1000"
+            background-gradient text-white border py-3 rounded-xl btn
+            hover:bg-primary/20 hover:border-primary transition duration-1000"
           >
             <Plus size={18} />
             Add Item
@@ -224,7 +224,7 @@ const Dashboard = () => {
             to="/grocery-list"
             className="flex items-center justify-center gap-2 
             bg-primary/20 text-primary border py-3 rounded-xl btn
-            hover:bg-primary hover:text-white  transition duration-1000"
+            hover:bg-gradient-to-b hover:from-green-500 hover:to-green-700 hover:text-white transition duration-1000"
           >
             <List size={18} />
             View All

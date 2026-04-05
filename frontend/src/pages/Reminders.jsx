@@ -238,14 +238,14 @@ const Reminders = () => {
                 <button
                   type="button"
                   onClick={() => setShowReminderModal(false)}
-                  className="px-4 py-2 rounded-lg border border-border hover:scale-[1.02] transition duration-500 hover:shadow-lg"
+                  className="px-4 py-2 rounded-lg border border-border hover:scale-[1.02] transition duration-300 hover:shadow-lg"
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-lg background-gradient text-white hover:scale-[1.02] transition duration-500 hover:shadow-xl"
+                  className="px-4 py-2 btn rounded-lg background-gradient text-white hover:scale-[1.02] transition duration-300 hover:shadow-xl"
                 >
                   Update Reminder
                 </button>
