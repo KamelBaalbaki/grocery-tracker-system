@@ -1,10 +1,4 @@
 # Smart Grocery Tracker
-_T197 Capstone Project for George Brown College_
-## Group Members:
-- 101496645 Kamel Baalbaki 
-- 101499536 Libareo Barbour 
-- 101498572 Thomas del Mundo 
-- 101514070 Ellie Adhikari
 
 ## Summary
 The purpose of this capstone project is to design and develop a full-stack web application that helps users manage and monitor their household food inventory more effectively.
