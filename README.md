@@ -1,7 +1,7 @@
 # Smart Grocery Tracker
 
 ## Summary
-The purpose of this capstone project is to design and develop a full-stack web application that helps users manage and monitor their household food inventory more effectively.
+The purpose of this project is to design and develop a full-stack web application that helps users manage and monitor their household food inventory more effectively.
 
 The primary objective of the application is to reduce food waste and its environmental impact while helping individuals make more informed purchasing decisions. By allowing users to track available food items, monitor stock levels, and maintain an organized inventory, the system encourages responsible consumption and reduces the likelihood of unused or expired food.
 
